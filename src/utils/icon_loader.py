@@ -1,4 +1,4 @@
-import os
+from pathlib import Path
 from PyQt6.QtGui import QIcon
 
 class IconLoader:
@@ -6,11 +6,9 @@ class IconLoader:
 
     @staticmethod
     def load():
-        icon_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', '..', 'assets', 'images', 'icons')
-        for file in os.listdir(icon_dir):
-            if file.endswith('.svg'):
-                name = os.path.splitext(file)[0]
-                IconLoader._icons[name] = QIcon(os.path.join(icon_dir, file))
+        icon_dir = Path(__file__).parent.parent.parent / 'assets' / 'images' / 'icons'
+        for icon_file_name in icon_dir.glob('*.svg'):
+            IconLoader._icons[icon_file_name.stem] = QIcon(str(icon_file_name))
     
     @staticmethod
     def get(name):
