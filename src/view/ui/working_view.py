@@ -60,8 +60,8 @@ class DirectoryToggleArea(ToggleBox):
 
 class AccountArea(QPushButton):
     logout_requested = pyqtSignal()
-    # about_requested = pyqtSignal()
-    # settings_requested = pyqtSignal()
+    about_requested = pyqtSignal()
+    settings_requested = pyqtSignal()
 
     def __init__(self, role : UserRole, parent = None):
         super().__init__('', parent)
@@ -95,7 +95,6 @@ class AccountArea(QPushButton):
 
         base_css = 'QPushButton { text-align: left; }'
 
-        """
         ## Settings button
         self.settings_action = QWidgetAction(self)
         self.settings_button = QPushButton('  Settings')
@@ -126,7 +125,6 @@ class AccountArea(QPushButton):
 
         self.about_action.setDefaultWidget(self.about_button)
         self.account_menu.addAction(self.about_action)
-        """
 
         self.account_menu.addSeparator()
 
