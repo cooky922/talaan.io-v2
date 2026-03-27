@@ -50,12 +50,16 @@ class StudentEntry:
         return {kind.value.internal_name : kind.value for kind in StudentEntry.FieldKind}
     
     @staticmethod
-    def validate_field(field : FieldKind, input : str, program_directory = None):
-        if field != StudentEntry.FieldKind.YEAR and len(input) == 0:
+    def get_primary_key_field() -> StudentEntry.FieldKind:
+        return StudentEntry.FieldKind.ID
+    
+    @staticmethod
+    def validate_field(field : FieldKind, input : str | int, program_directory = None):
+        if field not in [StudentEntry.FieldKind.YEAR, StudentEntry.FieldKind.PROGRAM_CODE] and len(input) == 0:
             raise ValidationError(EntryKind.STUDENT, field,
                                   ValidationErrorKind.MISSING_FIELD,
-                                  field.value.display_name + ' Input is empty')
-        match field: 
+                                  'This field cannot be empty')
+        match field:
             case StudentEntry.FieldKind.ID:
                 parts = input.split('-')
                 if len(parts) != 2:
@@ -87,7 +91,7 @@ class StudentEntry:
                 pass
 
             case StudentEntry.FieldKind.PROGRAM_CODE:
-                if program_directory is not None and not program_directory.has_program(input):
+                if input not in ['', 'None'] and program_directory is not None and not program_directory.has_program(input):
                     raise ValidationError(EntryKind.STUDENT,
                                           StudentEntry.FieldKind.PROGRAM_CODE,
                                           ValidationErrorKind.FOREIGN_KEY_MISSING,
@@ -114,6 +118,9 @@ class StudentEntry:
                 
     @staticmethod
     def validate_entry(entry : dict[str, str], requires_all = False, program_directory = None):
+        # sanitize 'None' -> ''
+        if 'program_code' in entry and entry['program_code'] == 'None':
+            entry['program_code'] = ''
         for field_kind in StudentEntry.FieldKind:
             if field_kind.value.internal_name not in entry:
                 if requires_all:
@@ -142,12 +149,16 @@ class ProgramEntry:
         return {kind.value.internal_name : kind.value for kind in ProgramEntry.FieldKind}
     
     @staticmethod
+    def get_primary_key_field() -> ProgramEntry.FieldKind:
+        return ProgramEntry.FieldKind.PROGRAM_CODE
+    
+    @staticmethod
     def validate_field(field : FieldKind, input : str, college_directory = None):
-        if len(input) == 0:
+        if field != ProgramEntry.FieldKind.COLLEGE_CODE and len(input) == 0:
             raise ValidationError(EntryKind.PROGRAM, field,
                                   ValidationErrorKind.MISSING_FIELD,
-                                  field.value.display_name + ' Input is empty')
-        match field: 
+                                  'This field cannot be empty')
+        match field:
             case ProgramEntry.FieldKind.PROGRAM_CODE:
                 pass
 
@@ -155,7 +166,7 @@ class ProgramEntry:
                 pass
 
             case ProgramEntry.FieldKind.COLLEGE_CODE:
-                if college_directory is not None and not college_directory.has_college(input):
+                if input not in ['', 'None'] and college_directory is not None and not college_directory.has_college(input):
                     raise ValidationError(EntryKind.COLLEGE,
                                           ProgramEntry.FieldKind.COLLEGE_CODE,
                                           ValidationErrorKind.FOREIGN_KEY_MISSING,
@@ -163,6 +174,9 @@ class ProgramEntry:
                 
     @staticmethod
     def validate_entry(entry : dict[str, str], requires_all = False, college_directory = None):
+        # sanitize 'None' -> ''
+        if 'college_code' in entry and entry['college_code'] == 'None':
+            entry['college_code'] = ''
         for field_kind in ProgramEntry.FieldKind:
             if field_kind.value.internal_name not in entry:
                 if requires_all:
@@ -190,11 +204,15 @@ class CollegeEntry:
         return {kind.value.internal_name : kind.value for kind in CollegeEntry.FieldKind}
     
     @staticmethod
+    def get_primary_key_field() -> CollegeEntry.FieldKind:
+        return CollegeEntry.FieldKind.COLLEGE_CODE
+    
+    @staticmethod
     def validate_field(field : FieldKind, input : str):
         if len(input) == 0:
             raise ValidationError(EntryKind.COLLEGE, field,
                                   ValidationErrorKind.MISSING_FIELD,
-                                  field.value.display_name + ' Input is empty')
+                                  'This field cannot be empty')
         match field: 
             case CollegeEntry.FieldKind.COLLEGE_CODE:
                 # Must be in one word and all capitals

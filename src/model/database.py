@@ -3,7 +3,7 @@ from dataclasses import dataclass
 from enum import Enum
 from pathlib import Path
 from typing import Union, Callable, Optional, Iterator, List
-import pandas as pd
+import pandas as pd # type: ignore
 
 from src.model.errors import ArgumentError, DatabaseError, DatabaseErrorKind
 from src.model.entries import *
@@ -47,7 +47,7 @@ class GenericDatabase:
             self.df = pd.DataFrame()
         else:
             try:
-                self.df = pd.read_csv(str(file_path))
+                self.df = pd.read_csv(str(file_path)).fillna('')
             except pd.errors.EmptyDataError:
                 self.df = pd.DataFrame()
 
@@ -391,7 +391,7 @@ class ProgramDirectory:
         # TODO: update student records
 
     @classmethod
-    def update_record(self, updates : dict[str, str], *, index : int = None, key : str = None, action : ConstraintAction = ConstraintAction.Restrict):
+    def update_record(self, updates : dict[str, str], *, index : int = None, key : str = None, action : ConstraintAction = ConstraintAction.Cascade):
         ProgramEntry.validate_entry(updates, requires_all = False, college_directory = CollegeDirectory)
         count = 1
         old_program_code = self.get_record(index = index, key = key)['program_code']
@@ -410,7 +410,7 @@ class ProgramDirectory:
                         StudentDirectory.update_record({'program_code' : ''}, key = student_record['id'])
 
                     case ConstraintAction.Restrict:
-                        raise ValueError('...')
+                        raise ValueError('restrict error')
                 count = count + 1
         return count
 
@@ -433,7 +433,7 @@ class ProgramDirectory:
                     StudentDirectory.update_record({'program_code' : ''}, key = student_record['id'])
 
                 case ConstraintAction.Restrict:
-                    raise ValueError('...')
+                    raise ValueError('restrict error')
             count = count + 1
         self._db.delete_record(index = index, key = key)
         return count
@@ -498,7 +498,7 @@ class CollegeDirectory:
         self._db.update_records(where, updates)
 
     @classmethod
-    def update_record(self, updates : dict[str, str], *, index : int = None, key : str = None, action : ConstraintAction = ConstraintAction.Restrict):
+    def update_record(self, updates : dict[str, str], *, index : int = None, key : str = None, action : ConstraintAction = ConstraintAction.Cascade):
         CollegeEntry.validate_entry(updates, requires_all = False)
         count = 1
         old_college_code = self.get_record(index = index, key = key)['college_code']
@@ -506,9 +506,7 @@ class CollegeDirectory:
         if 'college_code' in updates:
             new_college_code = updates['college_code']
         self._db.update_record(updates, index = index, key = key)
-        print('renaming ... 1')
         if new_college_code != old_college_code:
-            print('renaming ... 2')
             for program_record in ProgramDirectory.get_records(where = f'college_code == \'{old_college_code}\''):
                 match action:
                     case ConstraintAction.Cascade:
@@ -518,7 +516,7 @@ class CollegeDirectory:
                         ProgramDirectory.update_record({'college_code' : ''}, key = program_record['program_code'])
 
                     case ConstraintAction.Restrict:
-                        raise ValueError('...')
+                        raise ValueError('restrict error')
                 count = count + 1
         return count
 
@@ -527,7 +525,7 @@ class CollegeDirectory:
         self._db.delete_records(where)
 
     @classmethod
-    def delete_record(self, *, index: int = None, key: str = None, action : ConstraintAction = ConstraintAction.Restrict):
+    def delete_record(self, *, index: int = None, key: str = None, action : ConstraintAction = ConstraintAction.SetNull):
         count = 1
         college_code = self.get_record(index = index, key = key)['college_code']
         for program_record in ProgramDirectory.get_records(where = f'college_code == \'{college_code}\''):
@@ -540,7 +538,7 @@ class CollegeDirectory:
                     ProgramDirectory.update_record({'college_code' : ''}, key = program_record['program_code'], action = action)
 
                 case ConstraintAction.Restrict:
-                    raise ValueError('...')
+                    raise ValueError('restrict error')
             count = count + 1
         self._db.delete_record(index = index, key = key)
         return count
