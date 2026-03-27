@@ -9,10 +9,15 @@ RowLayout {
     Components.InfoText {
         text: {
             let total_entries = appDirectoryController.totalEntries
-            if (total_entries <= appDirectoryController.pageSize)
-                return `Showing all ${total_entries} entries`
-            else 
-                return `Showing ${appDirectoryController.visibleEntries} of ${total_entries} entries`
+            if (total_entries <= appDirectoryController.pageSize) {
+                if (total_entries === 0) 
+                    return "Showing no entries"
+                else if (total_entries === 1)
+                    return "Showing one entry"
+                else
+                    return `Showing all ${total_entries} entries`
+            }
+            return `Showing ${appDirectoryController.visibleEntries} of ${total_entries} entries`
         }
         textSize: 12
         textColor: appTheme.darkTextColor
