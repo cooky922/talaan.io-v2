@@ -1,15 +1,14 @@
 import math
-from PyQt6.QtCore import QObject, pyqtSlot, pyqtProperty, pyqtSignal # type: ignore
+from PyQt6.QtCore import QObject, pyqtSlot, pyqtProperty, pyqtSignal
+from numpy import record # type: ignore
 
+from src.database.queries import Paged, Sorted, Search
 from src.model.schema import DirectoryKind
 from src.model.errors import ValidationError, ValidationErrorKind, DatabaseError, DatabaseErrorKind
-from src.model.database import (
+from src.model.directories import (
     StudentDirectory, 
     ProgramDirectory, 
-    CollegeDirectory, 
-    ConstraintAction, 
-    Paged, 
-    Sorted,
+    CollegeDirectory,
     DIRECTORY_MAP
 )
     
@@ -92,7 +91,6 @@ class QMLDirectoryController(QObject):
     @pyqtProperty('QVariantList', notify = directoryChanged)
     def currentDirectorySchema(self):
         fields = self.dir_kind.get_entry_type().get_fields()
-
         def get_options(field_name : str):
             match field_name:
                 case 'gender':
@@ -229,7 +227,7 @@ class QMLDirectoryController(QObject):
                     if mode == 'edit' and current_data[primary_key] == initial_data[primary_key]:
                         continue
                     # check if the key already exists
-                    DIRECTORY_MAP[self.dir_kind]._db.validate_add_record(current_data)
+                    DIRECTORY_MAP[self.dir_kind].check_duplicate_key(val)
                 except DatabaseError as e:
                     errors[col] = e.message
                     is_valid = False
@@ -242,10 +240,10 @@ class QMLDirectoryController(QObject):
     def addRecord(self, new_data):
         try:
             record = {k: (v if k == 'year' else str(v)) for k, v in new_data.items()}
-            # inject it as an empty string so 'requires_all = True' doesn't panic.
+            # inject it as a null value so 'requires_all = True' doesn't panic.
             for col in DIRECTORY_MAP[self.dir_kind].get_columns():
                 if col not in record:
-                    record[col] = ''
+                    record[col] = None
             DIRECTORY_MAP[self.dir_kind].add_record(record)
             return {'success': True, 'message': 'Record added successfully.'}
         except Exception as e:
@@ -257,11 +255,15 @@ class QMLDirectoryController(QObject):
     def updateRecord(self, old_data, new_data):
         try:
             updates = {k: (v if k == 'year' else str(v)) for k, v in new_data.items()}
+            for col in DIRECTORY_MAP[self.dir_kind].get_columns():
+                if updates[col] == '':
+                    updates[col] = None
             primary_key = self.getPrimaryKey()
             old_key_value = str(old_data[primary_key])
             DIRECTORY_MAP[self.dir_kind].update_record(updates, key = old_key_value)
             return {'success': True, 'message': 'Changes saved successfully.'}
         except Exception as e:
+            print(f'Error updating record: {e}')
             return {'success': False, 'message': str(e)}
         finally:
             self.refresh_table()
@@ -294,26 +296,23 @@ class QMLDirectoryController(QObject):
         columns = DIRECTORY_MAP[self.dir_kind].get_columns()
         
         # building a 'where' clause
-        where_clause = None
+        search_request = None
         if self._search_text:
             search_str = self._search_text.strip().lower()
             if self._search_filter_index == 0:
-                where_clause = lambda row: any(search_str in str(val).lower() for val in row.values)
+                search_request = Search(text = search_str, prefix_match = False)
             else:
-                # Special Case: when db == Student and search filter == Gender
-                if self.dir_kind == DirectoryKind.STUDENT and self._search_filter_index == 6:
-                    where_clause =  lambda row: str(row.get(columns[self._search_filter_index - 1], '')).lower().startswith(search_str)
-                else:
-                    where_clause = lambda row: search_str in str(row.get(columns[self._search_filter_index - 1], '')).lower()
+                use_prefix_match = self.dir_kind == DirectoryKind.STUDENT and self._search_filter_index == 6
+                search_request = Search(text = search_str, field = columns[self._search_filter_index - 1], prefix_match = use_prefix_match)
 
         # sorted and paged request
         paged_request = Paged.Specific(index = self._page_index + 1, size = self._page_size)
         sorted_request = Sorted.By(column = columns[self._sort_field_index] , ascending = self._sort_ascending)
 
-        self._total_entries = DIRECTORY_MAP[self.dir_kind].get_count(where = where_clause)
+        self._total_entries = DIRECTORY_MAP[self.dir_kind].get_count(search = search_request)
 
         entries = DIRECTORY_MAP[self.dir_kind].get_records(
-            where = where_clause,
+            search = search_request,
             sorted = sorted_request,
             paged = paged_request
         )

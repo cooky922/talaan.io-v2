@@ -1,7 +1,7 @@
 from PyQt6.QtCore import Qt, QAbstractTableModel, QModelIndex, pyqtSlot, pyqtProperty # type: ignore
 
 from src.model.schema import DirectoryKind
-from src.model.database import DIRECTORY_MAP
+from src.model.directories import DIRECTORY_MAP
 
 class DirectoryTableModel(QAbstractTableModel):
     def __init__(self):

@@ -6,7 +6,8 @@ from PyQt6.QtCore import QUrl # type: ignore
 from PyQt6.QtGui import QGuiApplication, QIcon, QColor # type: ignore
 from PyQt6.QtQml import QQmlApplicationEngine # type: ignore
 
-from src.model.database import StudentDirectory, ProgramDirectory, CollegeDirectory, DIRECTORY_MAP
+from src.database.database import SQLDatabase
+from src.model.directories import StudentDirectory, ProgramDirectory, CollegeDirectory, DIRECTORY_MAP
 from src.model.table_model import DirectoryTableModel
 from src.view.theme import FontLoader, QMLAppTheme
 from src.controller.directory_controller import QMLDirectoryController
@@ -18,6 +19,14 @@ class App(QGuiApplication):
     app_qml_file_path = str(Path(__file__).parent.parent / 'src' / 'view' / 'MainWindow.qml')
 
     def __init__(self):
+        # Load Database First
+        SQLDatabase.initialize()
+
+        # TODO: Remove this and replace with proper migration system.
+        # CollegeDirectory.import_from_csv(Path(__file__).parent.parent / 'data' / 'colleges.csv')
+        # ProgramDirectory.import_from_csv(Path(__file__).parent.parent / 'data' / 'programs.csv')
+        # StudentDirectory.import_from_csv(Path(__file__).parent.parent / 'data' / 'students.csv')
+
         super().__init__([])
 
         # "Bare metal" Windows Initialization
