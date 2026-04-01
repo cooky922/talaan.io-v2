@@ -147,11 +147,6 @@ class BaseDirectory:
     
     # TODO: add bulk add/update/delete methods
 
-    # deprecated
-    @classmethod
-    def save(cls):
-        pass
-
     @classmethod
     def import_from_csv(cls, file_path: Path) -> int:
         # bulk insert records from a CSV file using MYSQL

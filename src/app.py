@@ -67,9 +67,6 @@ class App(QGuiApplication):
         self.exitApp(ret)
 
     def exitApp(self, return_code : int):
-        StudentDirectory.save()
-        ProgramDirectory.save()
-        CollegeDirectory.save()
         sys.exit(return_code)
 
     @staticmethod
