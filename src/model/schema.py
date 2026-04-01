@@ -9,18 +9,18 @@ class FieldInfo:
     display_name : str
     underlying_type : type
 
-class EntryKind(Enum):
+class DirectoryKind(Enum):
     STUDENT = 'Student'
     PROGRAM = 'Program'
     COLLEGE = 'College'
 
     def get_entry_type(self):
         match self:
-            case EntryKind.STUDENT:
+            case DirectoryKind.STUDENT:
                 return StudentEntry
-            case EntryKind.PROGRAM:
+            case DirectoryKind.PROGRAM:
                 return ProgramEntry
-            case EntryKind.COLLEGE:
+            case DirectoryKind.COLLEGE:
                 return CollegeEntry
 
 class GenderKind(Enum):
@@ -56,30 +56,30 @@ class StudentEntry:
     @staticmethod
     def validate_field(field : FieldKind, input : str | int, program_directory = None):
         if field not in [StudentEntry.FieldKind.YEAR, StudentEntry.FieldKind.PROGRAM_CODE] and len(input) == 0:
-            raise ValidationError(EntryKind.STUDENT, field,
+            raise ValidationError(DirectoryKind.STUDENT, field,
                                   ValidationErrorKind.MISSING_FIELD,
                                   'This field cannot be empty')
         match field:
             case StudentEntry.FieldKind.ID:
                 parts = input.split('-')
                 if len(parts) != 2:
-                    raise ValidationError(EntryKind.STUDENT, 
+                    raise ValidationError(DirectoryKind.STUDENT, 
                                           StudentEntry.FieldKind.ID,
                                           ValidationErrorKind.INVALID_FORMAT,
                                           'ID Number must contain exactly one \'-\'')
                 for part in parts:
                     if len(part) != 4:
-                        raise ValidationError(EntryKind.STUDENT,
+                        raise ValidationError(DirectoryKind.STUDENT,
                                               StudentEntry.FieldKind.ID,
                                               ValidationErrorKind.INVALID_FORMAT,
                                               'ID Number must be in format 20XX-XXXX')
                     if not part.isdigit():
-                        raise ValidationError(EntryKind.STUDENT,
+                        raise ValidationError(DirectoryKind.STUDENT,
                                               StudentEntry.FieldKind.ID,
                                               ValidationErrorKind.INVALID_FORMAT,
                                               'ID Number must be in digits')
                 if not parts[0].startswith('20'):
-                    raise ValidationError(EntryKind.STUDENT,
+                    raise ValidationError(DirectoryKind.STUDENT,
                                           StudentEntry.FieldKind.ID,
                                           ValidationErrorKind.INVALID_FORMAT,
                                           'ID Number must start with 20XX')
@@ -92,26 +92,26 @@ class StudentEntry:
 
             case StudentEntry.FieldKind.PROGRAM_CODE:
                 if input not in ['', 'None'] and program_directory is not None and not program_directory.has_program(input):
-                    raise ValidationError(EntryKind.STUDENT,
+                    raise ValidationError(DirectoryKind.STUDENT,
                                           StudentEntry.FieldKind.PROGRAM_CODE,
                                           ValidationErrorKind.FOREIGN_KEY_MISSING,
                                           'The given program code does not exist')
 
             case StudentEntry.FieldKind.YEAR:
                 if not isinstance(input, int):
-                    raise ValidationError(EntryKind.STUDENT,
+                    raise ValidationError(DirectoryKind.STUDENT,
                                           StudentEntry.FieldKind.YEAR,
                                           ValidationErrorKind.INVALID_FORMAT,
                                           'The input is not a digit')
                 if input < 1 or input > 4:
-                    raise ValidationError(EntryKind.STUDENT,
+                    raise ValidationError(DirectoryKind.STUDENT,
                                           StudentEntry.FieldKind.YEAR,
                                           ValidationErrorKind.INVALID_FORMAT,
                                           'The year must be from 1 to 4')
                 
             case StudentEntry.FieldKind.GENDER:
                 if input not in ['Male', 'Female', 'Other']:
-                    raise ValidationError(EntryKind.STUDENT,
+                    raise ValidationError(DirectoryKind.STUDENT,
                                           StudentEntry.FieldKind.GENDER,
                                           ValidationErrorKind.INVALID_FORMAT,
                                           'Not a valid option')
@@ -124,7 +124,7 @@ class StudentEntry:
         for field_kind in StudentEntry.FieldKind:
             if field_kind.value.internal_name not in entry:
                 if requires_all:
-                    raise ValidationError(EntryKind.STUDENT, None,
+                    raise ValidationError(DirectoryKind.STUDENT, None,
                                           ValidationErrorKind.MISSING_FIELD,
                                           'The given input is missing some fields')
                 else:
@@ -155,7 +155,7 @@ class ProgramEntry:
     @staticmethod
     def validate_field(field : FieldKind, input : str, college_directory = None):
         if field != ProgramEntry.FieldKind.COLLEGE_CODE and len(input) == 0:
-            raise ValidationError(EntryKind.PROGRAM, field,
+            raise ValidationError(DirectoryKind.PROGRAM, field,
                                   ValidationErrorKind.MISSING_FIELD,
                                   'This field cannot be empty')
         match field:
@@ -167,7 +167,7 @@ class ProgramEntry:
 
             case ProgramEntry.FieldKind.COLLEGE_CODE:
                 if input not in ['', 'None'] and college_directory is not None and not college_directory.has_college(input):
-                    raise ValidationError(EntryKind.COLLEGE,
+                    raise ValidationError(DirectoryKind.COLLEGE,
                                           ProgramEntry.FieldKind.COLLEGE_CODE,
                                           ValidationErrorKind.FOREIGN_KEY_MISSING,
                                           'The given college code does not exist')
@@ -180,7 +180,7 @@ class ProgramEntry:
         for field_kind in ProgramEntry.FieldKind:
             if field_kind.value.internal_name not in entry:
                 if requires_all:
-                    raise ValidationError(EntryKind.PROGRAM, None,
+                    raise ValidationError(DirectoryKind.PROGRAM, None,
                                           ValidationErrorKind.MISSING_FIELD,
                                           'The given input is missing some fields')
                 else:
@@ -210,19 +210,19 @@ class CollegeEntry:
     @staticmethod
     def validate_field(field : FieldKind, input : str):
         if len(input) == 0:
-            raise ValidationError(EntryKind.COLLEGE, field,
+            raise ValidationError(DirectoryKind.COLLEGE, field,
                                   ValidationErrorKind.MISSING_FIELD,
                                   'This field cannot be empty')
         match field: 
             case CollegeEntry.FieldKind.COLLEGE_CODE:
                 # Must be in one word and all capitals
                 if len(input.split()) != 1:
-                    raise ValidationError(EntryKind.COLLEGE, 
+                    raise ValidationError(DirectoryKind.COLLEGE, 
                                           CollegeEntry.FieldKind.COLLEGE_CODE,
                                           ValidationErrorKind.INVALID_FORMAT,
                                           'The college code must contain exactly one word')
                 if not input.isupper():
-                    raise ValidationError(EntryKind.COLLEGE, 
+                    raise ValidationError(DirectoryKind.COLLEGE, 
                                           CollegeEntry.FieldKind.COLLEGE_CODE,
                                           ValidationErrorKind.INVALID_FORMAT,
                                           'The college code must be in uppercase')
@@ -235,7 +235,7 @@ class CollegeEntry:
         for field_kind in CollegeEntry.FieldKind:
             if field_kind.value.internal_name not in entry:
                 if requires_all:
-                    raise ValidationError(EntryKind.COLLEGE, None,
+                    raise ValidationError(DirectoryKind.COLLEGE, None,
                                           ValidationErrorKind.MISSING_FIELD,
                                           'The given input is missing some fields')
                 else:

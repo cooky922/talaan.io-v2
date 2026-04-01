@@ -6,7 +6,7 @@ from typing import Union, Callable, Optional, Iterator, List
 import pandas as pd # type: ignore
 
 from src.model.errors import ArgumentError, DatabaseError, DatabaseErrorKind
-from src.model.entries import *
+from src.model.schema import *
 
 class ConstraintAction(Enum):
     Cascade  = 0 # automatically updates/deletes related records when the referenced record is updated/deleted
@@ -267,12 +267,12 @@ class StudentDirectory:
     _db   = GenericDatabase(_path, primary_key = 'id')
 
     @staticmethod
-    def get_entry_kind():
-        return EntryKind.STUDENT
+    def get_kind():
+        return DirectoryKind.STUDENT
     
     @staticmethod
     def get_parent_entry_kind():
-        return EntryKind.PROGRAM
+        return DirectoryKind.PROGRAM
     
     @classmethod
     def get_primary_key(self):
@@ -339,12 +339,12 @@ class ProgramDirectory:
     _db   = GenericDatabase(_path, primary_key = 'program_code')
 
     @staticmethod
-    def get_entry_kind():
-        return EntryKind.PROGRAM
+    def get_kind():
+        return DirectoryKind.PROGRAM
     
     @staticmethod
     def get_parent_entry_kind():
-        return EntryKind.COLLEGE
+        return DirectoryKind.COLLEGE
     
     @classmethod
     def get_primary_key(self):
@@ -448,8 +448,8 @@ class CollegeDirectory:
     _db   = GenericDatabase(_path, primary_key = 'college_code')
 
     @staticmethod
-    def get_entry_kind():
-        return EntryKind.COLLEGE
+    def get_kind():
+        return DirectoryKind.COLLEGE
     
     @staticmethod
     def get_parent_entry_kind():
@@ -546,3 +546,10 @@ class CollegeDirectory:
     @classmethod
     def save(self):
         self._db.save()
+
+# directory_map
+DIRECTORY_MAP = {
+    DirectoryKind.STUDENT: StudentDirectory,
+    DirectoryKind.PROGRAM: ProgramDirectory,
+    DirectoryKind.COLLEGE: CollegeDirectory
+}

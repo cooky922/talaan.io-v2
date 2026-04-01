@@ -1,7 +1,7 @@
 import math
 from PyQt6.QtCore import QObject, pyqtSlot, pyqtProperty, pyqtSignal # type: ignore
 
-from src.model.entries import EntryKind
+from src.model.schema import DirectoryKind
 from src.model.errors import ValidationError, ValidationErrorKind, DatabaseError, DatabaseErrorKind
 from src.model.database import (
     StudentDirectory, 
@@ -9,7 +9,8 @@ from src.model.database import (
     CollegeDirectory, 
     ConstraintAction, 
     Paged, 
-    Sorted
+    Sorted,
+    DIRECTORY_MAP
 )
     
 class QMLDirectoryController(QObject):
@@ -21,7 +22,7 @@ class QMLDirectoryController(QObject):
     def __init__(self, model, parent = None):
         super().__init__(parent)
         self.model = model
-        self.db = StudentDirectory # default directory
+        self.dir_kind = DirectoryKind.STUDENT # default directory
         
         # Core States
         self._page_index = 0
@@ -48,11 +49,11 @@ class QMLDirectoryController(QObject):
 
     @pyqtProperty(str, notify = directoryChanged)
     def currentDirectoryName(self):
-        return self.db.get_entry_kind().value
+        return self.dir_kind.value
 
     @pyqtSlot(result = str)
     def getPrimaryKey(self):
-        return self.db.get_primary_key()
+        return DIRECTORY_MAP[self.dir_kind].get_primary_key()
 
     @pyqtProperty(int, notify = paginationChanged)
     def pageIndex(self):
@@ -90,17 +91,18 @@ class QMLDirectoryController(QObject):
     
     @pyqtProperty('QVariantList', notify = directoryChanged)
     def currentDirectorySchema(self):
-        fields = self.db.get_entry_kind().get_entry_type().get_fields()
+        fields = self.dir_kind.get_entry_type().get_fields()
+
         def get_options(field_name : str):
-            results = []
             match field_name:
                 case 'gender':
-                    results = ['Male', 'Female', 'Other']
-                case 'program_code' if self.db.get_entry_kind() == EntryKind.STUDENT:
-                    results = ['None'] + sorted(ProgramDirectory.get_keys())
-                case 'college_code' if self.db.get_entry_kind() == EntryKind.PROGRAM:
-                    results = ['None'] + sorted(CollegeDirectory.get_keys())
-            return results
+                    return ['Male', 'Female', 'Other']
+                case 'program_code' if self.dir_kind == DirectoryKind.STUDENT:
+                    return ['None'] + sorted(ProgramDirectory.get_keys())
+                case 'college_code' if self.dir_kind == DirectoryKind.PROGRAM:
+                    return ['None'] + sorted(CollegeDirectory.get_keys())
+                case _:
+                    return []
         return [{
             'internal_name': field_info.internal_name,
             'display_name':  field_info.display_name,
@@ -111,12 +113,9 @@ class QMLDirectoryController(QObject):
     def changeDirectory(self, directory_name):
         if self.currentDirectoryName != directory_name:
             match directory_name:
-                case 'Student':
-                    self.db = StudentDirectory
-                case 'Program':
-                    self.db = ProgramDirectory
-                case 'College':
-                    self.db = CollegeDirectory
+                case 'Student': self.dir_kind = DirectoryKind.STUDENT
+                case 'Program': self.dir_kind = DirectoryKind.PROGRAM
+                case 'College': self.dir_kind = DirectoryKind.COLLEGE
             self._page_index = 0
             self.reset_filter_options()
             self._search_filter_index = 0
@@ -183,7 +182,7 @@ class QMLDirectoryController(QObject):
 
     @pyqtSlot()
     def resetOnLogout(self):
-        self.db = StudentDirectory
+        self.dir_kind = DirectoryKind.STUDENT
         self._page_index = 0
         self._sort_field_index = 0
         self._sort_ascending = True
@@ -199,25 +198,24 @@ class QMLDirectoryController(QObject):
     @pyqtSlot('QVariantMap', 'QVariantMap', str, result = 'QVariantMap')
     def validateForm(self, initial_data, current_data, mode):
         # initialize things ...
-        entry_kind = self.db.get_entry_kind()
-        EntryType = entry_kind.get_entry_type()
+        EntryType = self.dir_kind.get_entry_type()
         ParentDirectoryType = None
-        match entry_kind:
-            case EntryKind.STUDENT:
+        match self.dir_kind:
+            case DirectoryKind.STUDENT:
                 ParentDirectoryType = ProgramDirectory
-            case EntryKind.PROGRAM:
+            case DirectoryKind.PROGRAM:
                 ParentDirectoryType = CollegeDirectory
-        primary_key = self.db.get_primary_key()
+        primary_key = self.getPrimaryKey()
         # status
         errors = {}
         is_valid = True
         
         # 1. Check for empty fields based on your schema
-        for col in self.db.get_columns():
+        for col in DIRECTORY_MAP[self.dir_kind].get_columns():
             val = current_data.get(col, '')
             # defer empty string checking to field validation
             try:
-                if entry_kind != EntryKind.COLLEGE:
+                if self.dir_kind != DirectoryKind.COLLEGE:
                     EntryType.validate_field(EntryType.FieldKind.from_internal_name(col), val, ParentDirectoryType)
                 else:
                     EntryType.validate_field(EntryType.FieldKind.from_internal_name(col), val)
@@ -231,7 +229,7 @@ class QMLDirectoryController(QObject):
                     if mode == 'edit' and current_data[primary_key] == initial_data[primary_key]:
                         continue
                     # check if the key already exists
-                    self.db._db.validate_add_record(current_data)
+                    DIRECTORY_MAP[self.dir_kind]._db.validate_add_record(current_data)
                 except DatabaseError as e:
                     errors[col] = e.message
                     is_valid = False
@@ -245,10 +243,10 @@ class QMLDirectoryController(QObject):
         try:
             record = {k: (v if k == 'year' else str(v)) for k, v in new_data.items()}
             # inject it as an empty string so 'requires_all = True' doesn't panic.
-            for col in self.db.get_columns():
+            for col in DIRECTORY_MAP[self.dir_kind].get_columns():
                 if col not in record:
                     record[col] = ''
-            self.db.add_record(record)
+            DIRECTORY_MAP[self.dir_kind].add_record(record)
             return {'success': True, 'message': 'Record added successfully.'}
         except Exception as e:
             return {'success': False, 'message': str(e)}
@@ -259,9 +257,9 @@ class QMLDirectoryController(QObject):
     def updateRecord(self, old_data, new_data):
         try:
             updates = {k: (v if k == 'year' else str(v)) for k, v in new_data.items()}
-            primary_key = self.db.get_primary_key()
+            primary_key = self.getPrimaryKey()
             old_key_value = str(old_data[primary_key])
-            self.db.update_record(updates, key = old_key_value)                
+            DIRECTORY_MAP[self.dir_kind].update_record(updates, key = old_key_value)
             return {'success': True, 'message': 'Changes saved successfully.'}
         except Exception as e:
             return {'success': False, 'message': str(e)}
@@ -271,9 +269,9 @@ class QMLDirectoryController(QObject):
     @pyqtSlot('QVariantMap', result = 'QVariantMap')
     def deleteRecord(self, old_data):
         try:
-            primary_key = self.db.get_primary_key()
+            primary_key = self.getPrimaryKey()
             key_value = str(old_data[primary_key])
-            self.db.delete_record(key = key_value)
+            DIRECTORY_MAP[self.dir_kind].delete_record(key = key_value)
             return {'success': True, 'message': 'Record deleted successfully.'}
         except Exception as e:
             return {'success': False, 'message': str(e)}
@@ -285,15 +283,15 @@ class QMLDirectoryController(QObject):
     # =========================================
     def reset_filter_options(self):
         self._filter_options = ['All Fields'] + [
-            self.db.get_entry_kind()
+            self.dir_kind
                 .get_entry_type()
                 .get_fields()[column].display_name
-            for column in self.db.get_columns()
+            for column in DIRECTORY_MAP[self.dir_kind].get_columns()
         ]
 
     def refresh_table(self):
         # get columns
-        columns = self.db.get_columns()
+        columns = DIRECTORY_MAP[self.dir_kind].get_columns()
         
         # building a 'where' clause
         where_clause = None
@@ -303,7 +301,7 @@ class QMLDirectoryController(QObject):
                 where_clause = lambda row: any(search_str in str(val).lower() for val in row.values)
             else:
                 # Special Case: when db == Student and search filter == Gender
-                if self.db.get_entry_kind() == EntryKind.STUDENT and self._search_filter_index == 6:
+                if self.dir_kind == DirectoryKind.STUDENT and self._search_filter_index == 6:
                     where_clause =  lambda row: str(row.get(columns[self._search_filter_index - 1], '')).lower().startswith(search_str)
                 else:
                     where_clause = lambda row: search_str in str(row.get(columns[self._search_filter_index - 1], '')).lower()
@@ -312,15 +310,15 @@ class QMLDirectoryController(QObject):
         paged_request = Paged.Specific(index = self._page_index + 1, size = self._page_size)
         sorted_request = Sorted.By(column = columns[self._sort_field_index] , ascending = self._sort_ascending)
 
-        self._total_entries = self.db.get_count(where = where_clause)
+        self._total_entries = DIRECTORY_MAP[self.dir_kind].get_count(where = where_clause)
 
-        entries = self.db.get_records(
+        entries = DIRECTORY_MAP[self.dir_kind].get_records(
             where = where_clause,
             sorted = sorted_request,
             paged = paged_request
         )
 
-        self.model.resetModel(self.db, entries)
+        self.model.resetModel(self.dir_kind, entries)
 
         self._visible_entries = len(entries)
 

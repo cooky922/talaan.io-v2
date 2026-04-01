@@ -6,7 +6,7 @@ from PyQt6.QtCore import QUrl # type: ignore
 from PyQt6.QtGui import QGuiApplication, QIcon, QColor # type: ignore
 from PyQt6.QtQml import QQmlApplicationEngine # type: ignore
 
-from src.model.database import StudentDirectory, ProgramDirectory, CollegeDirectory
+from src.model.database import StudentDirectory, ProgramDirectory, CollegeDirectory, DIRECTORY_MAP
 from src.model.table_model import DirectoryTableModel
 from src.view.theme import FontLoader, QMLAppTheme
 from src.controller.directory_controller import QMLDirectoryController
@@ -37,7 +37,7 @@ class App(QGuiApplication):
         # Creating objects necessary for QML bridge
         self.appUtils = QMLUtils(self)
         self.appTheme = QMLAppTheme(self)
-        self.appDirectoryModel = DirectoryTableModel(StudentDirectory)
+        self.appDirectoryModel = DirectoryTableModel()
         self.appDirectoryController = QMLDirectoryController(self.appDirectoryModel, self)
         self.appDirectoryController.refresh_table()
 
