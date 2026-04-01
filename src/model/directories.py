@@ -22,11 +22,6 @@ class BaseDirectory:
     def get_kind(cls) -> DirectoryKind:
         return cls.KIND
     
-    # deprecated
-    @classmethod
-    def get_parent_entry_kind(cls) -> Optional[DirectoryKind]:
-        return cls.PARENT_KIND
-    
     @classmethod
     def get_parent_kind(cls) -> Optional[DirectoryKind]:
         return cls.PARENT_KIND

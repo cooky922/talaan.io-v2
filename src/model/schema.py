@@ -22,6 +22,15 @@ class DirectoryKind(Enum):
                 return ProgramEntry
             case DirectoryKind.COLLEGE:
                 return CollegeEntry
+            
+    def get_parent(self):
+        match self:
+            case DirectoryKind.STUDENT:
+                return DirectoryKind.PROGRAM
+            case DirectoryKind.PROGRAM:
+                return DirectoryKind.COLLEGE
+            case DirectoryKind.COLLEGE:
+                return None
 
 class GenderKind(Enum):
     MALE = 'Male'

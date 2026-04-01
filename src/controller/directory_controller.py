@@ -197,12 +197,7 @@ class QMLDirectoryController(QObject):
     def validateForm(self, initial_data, current_data, mode):
         # initialize things ...
         EntryType = self.dir_kind.get_entry_type()
-        ParentDirectoryType = None
-        match self.dir_kind:
-            case DirectoryKind.STUDENT:
-                ParentDirectoryType = ProgramDirectory
-            case DirectoryKind.PROGRAM:
-                ParentDirectoryType = CollegeDirectory
+        ParentDirectoryType = DIRECTORY_MAP[self.dir_kind.get_parent()]
         primary_key = self.getPrimaryKey()
         # status
         errors = {}
