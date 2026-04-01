@@ -1,10 +1,8 @@
 import math
 from PyQt6.QtCore import QObject, pyqtSlot, pyqtProperty, pyqtSignal
-from numpy import record # type: ignore
-
 from src.database.queries import Paged, Sorted, Search
 from src.model.schema import DirectoryKind
-from src.model.errors import ValidationError, ValidationErrorKind, DatabaseError, DatabaseErrorKind
+from src.model.errors import ValidationError, DatabaseError
 from src.model.directories import (
     StudentDirectory, 
     ProgramDirectory, 

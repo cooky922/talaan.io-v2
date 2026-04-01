@@ -1,5 +1,5 @@
 from PyQt6.QtCore import QObject, pyqtSlot, pyqtProperty, pyqtSignal # type: ignore
-from PyQt6.QtGui import QGuiApplication, QIcon, QColor # type: ignore
+from PyQt6.QtGui import QColor # type: ignore
 
 class QMLUtils(QObject):
     def __init__(self, parent = None):

@@ -1,12 +1,10 @@
-import sys
-from enum import Enum
 from pathlib import Path
-from typing import Union, Callable, Optional, Iterator, List
+from typing import Union, Optional, Iterator, List
 import csv
 
 from src.database.database import SQLDatabase
 from src.database.queries import Sorted, Paged, Search
-from src.model.errors import ArgumentError, DatabaseError, DatabaseErrorKind
+from src.model.errors import DatabaseError, DatabaseErrorKind
 from src.model.schema import *
 
 # Base directory

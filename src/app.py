@@ -3,14 +3,13 @@ import os
 import sys
 from pathlib import Path
 from PyQt6.QtCore import QUrl # type: ignore
-from PyQt6.QtGui import QGuiApplication, QIcon, QColor # type: ignore
+from PyQt6.QtGui import QGuiApplication, QIcon # type: ignore
 from PyQt6.QtQml import QQmlApplicationEngine # type: ignore
 
+from src.controller.directory_controller import QMLDirectoryController
 from src.database.database import SQLDatabase
-from src.model.directories import StudentDirectory, ProgramDirectory, CollegeDirectory, DIRECTORY_MAP
 from src.model.table_model import DirectoryTableModel
 from src.view.theme import FontLoader, QMLAppTheme
-from src.controller.directory_controller import QMLDirectoryController
 from src.utils import QMLUtils
 
 class App(QGuiApplication):
