@@ -17,7 +17,9 @@ RowLayout {
                 else
                     return `Showing all ${total_entries} entries`
             }
-            return `Showing ${appDirectoryController.visibleEntries} of ${total_entries} entries`
+            let from = appDirectoryController.pageIndex * appDirectoryController.pageSize + 1
+            let to = appDirectoryController.pageIndex * appDirectoryController.pageSize + appDirectoryController.visibleEntries
+            return `Showing ${from}-${to} of ${total_entries} entries`
         }
         textSize: 12
         textColor: appTheme.darkTextColor
