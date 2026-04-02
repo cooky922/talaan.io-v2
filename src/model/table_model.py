@@ -30,8 +30,8 @@ class DirectoryTableModel(QAbstractTableModel):
             row = index.row()
             col = index.column()
             key = self._headers[col]
-            # Safely fetch the data from the current chunk
-            return str(self._data[row].get(key, ''))
+            value = self._data[row].get(key, '')
+            return None if value is None else str(value)
         return None
     
     def headerData(self, section, orientation, role = Qt.ItemDataRole.DisplayRole):

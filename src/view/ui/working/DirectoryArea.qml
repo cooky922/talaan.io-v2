@@ -193,7 +193,7 @@ Rectangle {
                             text: {
                                 if (model.display === undefined ||
                                     model.display === null ||
-                                    model.display === "")
+                                    model.display.length === 0)
                                     return "None"
                                 return model.display
                             }
@@ -202,7 +202,7 @@ Rectangle {
                             color: {
                                 if (model.display === undefined || 
                                     model.display === null || 
-                                    model.display === "")
+                                    model.display.length === 0)
                                     return "#808080"
                                 return "#1F2937"
                             }

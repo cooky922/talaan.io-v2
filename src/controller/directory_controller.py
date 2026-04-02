@@ -232,7 +232,14 @@ class QMLDirectoryController(QObject):
     @pyqtSlot('QVariantMap', result = 'QVariantMap')
     def addRecord(self, new_data):
         try:
-            record = {k: (v if k == 'year' else str(v)) for k, v in new_data.items()}
+            record = {}
+            for k, v in new_data.items():
+                if k == 'year':
+                    record[k] = v
+                elif v is None or v == '':
+                    record[k] = None
+                else:
+                    record[k] = str(v)
             # inject it as a null value so 'requires_all = True' doesn't panic.
             for col in DIRECTORY_MAP[self.dir_kind].get_columns():
                 if col not in record:
@@ -247,9 +254,16 @@ class QMLDirectoryController(QObject):
     @pyqtSlot('QVariantMap', 'QVariantMap', result = 'QVariantMap')
     def updateRecord(self, old_data, new_data):
         try:
-            updates = {k: (v if k == 'year' else str(v)) for k, v in new_data.items()}
+            updates = {}
+            for k, v in new_data.items():
+                if k == 'year':
+                    updates[k] = v
+                elif v is None or v == '':
+                    updates[k] = None
+                else:
+                    updates[k] = str(v)
             for col in DIRECTORY_MAP[self.dir_kind].get_columns():
-                if updates[col] == '':
+                if col not in updates:
                     updates[col] = None
             primary_key = self.getPrimaryKey()
             old_key_value = str(old_data[primary_key])
