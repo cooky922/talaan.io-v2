@@ -62,6 +62,7 @@ Rectangle {
                 onSettingsRequested: {}
                 onAboutRequested: {}
                 onLogoutRequested: {
+                    workingPage.isEditMode = false
                     appDirectoryController.resetOnLogout()
                     stackView.pop(StackView.Immediate)
                 }
@@ -154,11 +155,11 @@ Rectangle {
                         }
                     }
 
-                    // == Directory Area Table
+                    // == Directory Area Table                    
                     WorkingUI.DirectoryArea {
                         Layout.fillWidth: true
                         Layout.fillHeight: true
-                    }
+                    }                    
 
                     // == Pagination Area
                     WorkingUI.PaginationArea {

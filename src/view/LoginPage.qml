@@ -8,7 +8,7 @@ Rectangle {
     id: loginPage
     color: "transparent"
 
-    property Component preloadedWorkingPage: null
+    property var preloadedWorkingPage: null
 
     ColumnLayout {
         anchors.fill: parent
@@ -77,6 +77,7 @@ Rectangle {
     }
 
     Component.onCompleted: {
-        preloadedWorkingPage = Qt.createComponent("WorkingPage.qml")
+        let comp = Qt.createComponent("WorkingPage.qml")
+        preloadedWorkingPage = comp.createObject(null)
     }
 }
