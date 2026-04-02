@@ -191,6 +191,11 @@ class QMLDirectoryController(QObject):
         self.searchChanged.emit()
         self.refresh_table()
 
+    @pyqtSlot('QVariantMap', 'QVariantMap', result = bool)
+    def areRecordsEqual(self, old_data, new_data):
+        # TODO: optimize
+        return old_data == self.normalizeRecord(new_data)
+
     @pyqtSlot('QVariantMap', 'QVariantMap', str, result = 'QVariantMap')
     def validateForm(self, initial_data, current_data, mode):
         # initialize things ...
@@ -232,18 +237,7 @@ class QMLDirectoryController(QObject):
     @pyqtSlot('QVariantMap', result = 'QVariantMap')
     def addRecord(self, new_data):
         try:
-            record = {}
-            for k, v in new_data.items():
-                if k == 'year':
-                    record[k] = v
-                elif v is None or v == '':
-                    record[k] = None
-                else:
-                    record[k] = str(v)
-            # inject it as a null value so 'requires_all = True' doesn't panic.
-            for col in DIRECTORY_MAP[self.dir_kind].get_columns():
-                if col not in record:
-                    record[col] = None
+            record = self.normalizeRecord(new_data)
             DIRECTORY_MAP[self.dir_kind].add_record(record)
             return {'success': True, 'message': 'Record added successfully.'}
         except Exception as e:
@@ -254,17 +248,7 @@ class QMLDirectoryController(QObject):
     @pyqtSlot('QVariantMap', 'QVariantMap', result = 'QVariantMap')
     def updateRecord(self, old_data, new_data):
         try:
-            updates = {}
-            for k, v in new_data.items():
-                if k == 'year':
-                    updates[k] = v
-                elif v is None or v == '':
-                    updates[k] = None
-                else:
-                    updates[k] = str(v)
-            for col in DIRECTORY_MAP[self.dir_kind].get_columns():
-                if col not in updates:
-                    updates[col] = None
+            updates = self.normalizeRecord(new_data)
             primary_key = self.getPrimaryKey()
             old_key_value = str(old_data[primary_key])
             DIRECTORY_MAP[self.dir_kind].update_record(updates, key = old_key_value)
@@ -290,6 +274,20 @@ class QMLDirectoryController(QObject):
     # =========================================
     # CORE DATA LOGIC
     # =========================================
+    def normalizeRecord(self, data):
+        new_data = {}
+        for k, v in data.items():
+            if k == 'year':
+                new_data[k] = v
+            elif v is None or v == '':
+                new_data[k] = None
+            else:
+                new_data[k] = str(v)
+        for col in DIRECTORY_MAP[self.dir_kind].get_columns():
+            if col not in data:
+                new_data[col] = None
+        return new_data
+
     def reset_filter_options(self):
         self._filter_options = ['All Fields'] + [
             self.dir_kind

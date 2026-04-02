@@ -484,11 +484,16 @@ Window {
             
             Components.ActionButton {
                 visible: root.mode !== "info"
-                enabled: root.isFormValid
+                enabled: {
+                    if (root.mode === "edit")
+                        return root.isFormValid && !appDirectoryController.areRecordsEqual(root.initialData, root.currentData)
+                    else
+                        return root.isFormValid
+                }
                 text: root.mode === "edit" ? "Save Changes" : "Add Record"
-                textColor: root.isFormValid ? "white" : "#aaaaaa"
+                textColor: enabled ? "white" : "#aaaaaa"
                 textSize: 12
-                buttonColor: root.isFormValid ? appTheme.activeButtonBgColor : "#f0f0f0" 
+                buttonColor: enabled ? appTheme.activeButtonBgColor : "#f0f0f0" 
 
                 Layout.preferredHeight: 30
                 
