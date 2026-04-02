@@ -33,6 +33,7 @@ Rectangle {
                     resizableColumns: false
 
                     Layout.fillWidth: true
+                    Layout.alignment: Qt.AlignTop
                     
                     delegate: Rectangle {
                         implicitHeight: 30
@@ -96,9 +97,27 @@ Rectangle {
                     }
                 }
 
+                // empty state
+                Components.InfoText {
+                    visible: appDirectoryController.totalEntries === 0
+                    Layout.alignment: Qt.AlignCenter
+
+                    text: appDirectoryController.searchText.length === 0 ? "Empty directory (╥﹏╥)" : "No results found (╥﹏╥)"
+                    textSize: 42
+                    textColor: "#888888"
+                    font.bold: true
+                    bottomPadding: 40
+                }
+
+                Item {
+                    Layout.fillWidth: true
+                    visible: appDirectoryController.totalEntries === 0
+                }
+
                 // table body
                 TableView {
                     id: tableView
+                    visible: appDirectoryController.totalEntries > 0
                     model: appDirectoryModel
                     clip: true
                     columnSpacing: 0
