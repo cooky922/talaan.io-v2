@@ -33,12 +33,90 @@ RowLayout {
         visible: appDirectoryController.totalPages !== 1
 
         // > displays the page status
+        Row {
+            spacing: 5
+            anchors.verticalCenter: parent.verticalCenter
+
+            Components.InfoText {
+                text: "Page "
+                textSize: 12
+                textColor: appTheme.darkTextColor
+                anchors.verticalCenter: parent.verticalCenter
+            }
+
+            TextField {
+                id: pageInput
+                width: Math.max(30, contentWidth + 20)
+                height: 24
+                
+                leftPadding: 5
+                rightPadding: 5
+                anchors.verticalCenter: parent.verticalCenter
+                
+                // > restricts input strictly to numbers between 1 and totalPages
+                validator: RegularExpressionValidator { 
+                    regularExpression: /^[1-9][0-9]*$/ 
+                }
+
+                // > keep text synced with the backend (if changed via next/prev buttons)
+                text: (appDirectoryController.pageIndex + 1).toString()
+                maximumLength: appDirectoryController.totalPages.toString().length
+                
+                font.pixelSize: 12
+                font.family: appTheme.rethinkSansFontName
+                color: appTheme.darkTextColor
+                horizontalAlignment: TextInput.AlignHCenter
+
+                property bool isInputValid: {
+                    let num = parseInt(text)
+                    return !isNaN(num) && num >= 1 && num <= appDirectoryController.totalPages
+                }
+
+                background: Rectangle {
+                    radius: 4
+                    color: "white"
+                    border.width: 1
+                    border.color: pageInput.isInputValid ? "#CCCCCC" : "#ff4c4c" 
+                }
+
+                // > change page when user hits Enter or clicks away
+                onEditingFinished: {
+                    if (isInputValid) {
+                        appDirectoryController.setPage(parseInt(text))
+                        focus = false
+                    } else {
+                        // > if they typed something invalid and clicked away, reset to the current page
+                        text = (appDirectoryController.pageIndex + 1).toString()
+                        focus = false
+                    }
+                }
+
+                Connections {
+                    target: appDirectoryController
+                    function onPaginationChanged() {
+                        if (!pageInput.activeFocus) {
+                            pageInput.text = (appDirectoryController.pageIndex + 1).toString()
+                        }
+                    }
+                }
+            }
+
+            Components.InfoText {
+                text: " / " + appDirectoryController.totalPages
+                textSize: 12
+                textColor: appTheme.darkTextColor
+                anchors.verticalCenter: parent.verticalCenter
+            }
+        }
+
+        /*
         Components.InfoText {
             text: "Page " + (appDirectoryController.pageIndex + 1) + " / " + appDirectoryController.totalPages
             textSize: 12
             textColor: appTheme.darkTextColor
             anchors.verticalCenter: parent.verticalCenter
         }
+        */
         
         Item { width: 10; height: 1 }
 

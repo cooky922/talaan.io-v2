@@ -176,6 +176,13 @@ class QMLDirectoryController(QObject):
             self._page_index = self.totalPages - 1
             self.refresh_table()
 
+    @pyqtSlot(int)
+    def setPage(self, page_number):
+        target_index = page_number - 1
+        if 0 <= target_index < self.totalPages:
+            self._page_index = target_index
+            self.refresh_table()
+
     @pyqtSlot()
     def resetOnLogout(self):
         self.dir_kind = DirectoryKind.STUDENT
