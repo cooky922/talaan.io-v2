@@ -108,15 +108,6 @@ RowLayout {
                 anchors.verticalCenter: parent.verticalCenter
             }
         }
-
-        /*
-        Components.InfoText {
-            text: "Page " + (appDirectoryController.pageIndex + 1) + " / " + appDirectoryController.totalPages
-            textSize: 12
-            textColor: appTheme.darkTextColor
-            anchors.verticalCenter: parent.verticalCenter
-        }
-        */
         
         Item { width: 10; height: 1 }
 

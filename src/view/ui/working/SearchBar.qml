@@ -1,79 +1,232 @@
 import QtQuick
 import QtQuick.Controls
 import QtQuick.Layouts
+import QtQuick.Effects
 import "../../components" as Components
 
-TextField {
-    id: searchBar
-
-    color: appTheme.darkTextColor
-    font.pixelSize: 12
-    placeholderText: "Search"
-    placeholderTextColor: Qt.lighter(searchBar.color, 1.5)
-    leftPadding: 35
-    rightPadding: 40
-    clip: true
+Rectangle {
+    id: root
     
-    background: Rectangle {
-        color: "transparent"
-        border.color: searchBar.activeFocus ? appTheme.activeButtonBgColor : "#D1D5DB"
-        border.width: 1
-        radius: 16
-    }
+    color: "transparent"
+    radius: 16
+    border.width: 1
+    border.color: (searchInput.activeFocus || filterBox.popup.visible) ? appTheme.activeButtonBgColor : "#D1D5DB"
+    clip: true
 
-    // > search icon at the left
-    Image {
-        source: "../../../../assets/images/icons/search-dark.svg"
-        sourceSize.width: 16
-        sourceSize.height: 16
-        anchors.left: parent.left
-        anchors.leftMargin: 10
-        anchors.verticalCenter: parent.verticalCenter
-        opacity: 0.5
-    }
+    RowLayout {
+        anchors.fill: parent
+        spacing: 0
 
-    // > close icon at the right
-    Image {
-        source: "../../../../assets/images/icons/close-dark.svg"
-        sourceSize.width: 16
-        sourceSize.height: 16
-        anchors.right: parent.right
-        anchors.rightMargin: 10
-        anchors.verticalCenter: parent.verticalCenter
-        opacity: clearMouseArea.containsMouse ? 0.8 : 0.5
-        visible: searchBar.text.length > 0 
+        // > search icon at the left edge
+        Item {
+            Layout.preferredWidth: 35
+            Layout.fillHeight: true
 
-        MouseArea {
-            id: clearMouseArea
-            anchors.fill: parent
-            hoverEnabled: true
-            cursorShape: Qt.PointingHandCursor
-            
-            onClicked: {
-                searchBar.clear()
-                searchDebounce.stop()
-                appDirectoryController.updateSearch("")
-                searchBar.forceActiveFocus() 
+            Image {
+                source: "../../../../assets/images/icons/search-dark.svg"
+                sourceSize.width: 16
+                sourceSize.height: 16
+                anchors.centerIn: parent
+                anchors.horizontalCenterOffset: 5
+                opacity: 0.5
             }
         }
-    }
 
-    // > wait for 10ms after user stops typing
-    Timer {
-        id: searchDebounce
-        interval: 10
-        repeat: false
-        onTriggered: {
-            appDirectoryController.updateSearch(searchBar.text)
+        // > search input field
+        TextField {
+            id: searchInput
+            Layout.fillWidth: true
+            Layout.fillHeight: true
+
+            color: appTheme.darkTextColor
+            font.pixelSize: 12
+            placeholderText: {
+                let directoryName = appDirectoryController.currentDirectoryName.toLowerCase()
+                return `Search ${directoryName}s...`
+            }
+            placeholderTextColor: Qt.lighter(color, 1.5)
+            
+            verticalAlignment: Text.AlignVCenter
+            leftPadding: 5
+            rightPadding: 10
+            clip: true
+            
+            background: Item {}
+
+            // > wait for 10ms after user stops typing
+            Timer {
+                id: searchDebounce
+                interval: 10
+                repeat: false
+                onTriggered: {
+                    appDirectoryController.updateSearch(searchInput.text)
+                }
+            }
+
+            onTextEdited: searchDebounce.restart()
+            onAccepted: {
+                searchDebounce.stop()
+                appDirectoryController.updateSearch(searchInput.text)
+            }
+
+            Connections {
+                target: appDirectoryController
+                function onSearchChanged() {
+                    if (!searchInput.activeFocus) {
+                        searchInput.text = appDirectoryController.searchText
+                    }
+                }
+            }
         }
-    }
 
-    onTextEdited: {
-        searchDebounce.restart()
-    }
+        // > clear button (only visible when there's text)
+        Item {
+            Layout.preferredWidth: 26
+            Layout.fillHeight: true
+            visible: searchInput.text.length > 0
 
-    onAccepted: {
-        searchDebounce.stop()
-        appDirectoryController.updateSearch(searchBar.text)
+            Image {
+                source: "../../../../assets/images/icons/close-dark.svg"
+                sourceSize.width: 16
+                sourceSize.height: 16
+                anchors.centerIn: parent
+                opacity: clearMouseArea.containsMouse ? 0.8 : 0.5
+
+                MouseArea {
+                    id: clearMouseArea
+                    anchors.fill: parent
+                    hoverEnabled: true
+                    cursorShape: Qt.PointingHandCursor
+                    
+                    onClicked: {
+                        searchInput.clear()
+                        searchDebounce.stop()
+                        appDirectoryController.updateSearch("")
+                        searchInput.forceActiveFocus() 
+                    }
+                }
+            }
+        }
+
+        // > vertical separator line between search and filter
+        Rectangle {
+            Layout.preferredWidth: 1
+            Layout.preferredHeight: root.height - 12
+            Layout.alignment: Qt.AlignVCenter
+            color: "#D1D5DB"
+        }
+
+        // > filter combobox
+        ComboBox {
+            id: filterBox
+            Layout.preferredWidth: 140
+            Layout.fillHeight: true
+            hoverEnabled: true
+
+            model: appDirectoryController.filterOptions
+            currentIndex: appDirectoryController.searchFilterIndex
+            onActivated: (index) => {
+                appDirectoryController.setSearchFilterIndex(index)
+            }
+
+            HoverHandler { cursorShape: Qt.PointingHandCursor }
+            indicator: Item {}
+
+            Connections {
+                target: appDirectoryController
+                function onSearchChanged() {
+                    if (!filterBox.popup.visible) {
+                        filterBox.currentIndex = appDirectoryController.searchFilterIndex
+                    }
+                }
+            }
+
+            contentItem: RowLayout {
+                anchors.fill: parent
+                anchors.leftMargin: 12
+                anchors.rightMargin: 16
+                spacing: 8
+
+                Image {
+                    source: "../../../../assets/images/icons/filter-dark.svg" 
+                    sourceSize.width: 16
+                    sourceSize.height: 16
+                    opacity: 0.8
+                    Layout.alignment: Qt.AlignVCenter
+                }
+
+                Text {
+                    text: filterBox.displayText
+                    font.pixelSize: 12
+                    color: "#374151" 
+                    verticalAlignment: Text.AlignVCenter
+                    Layout.fillWidth: true
+                    elide: Text.ElideRight
+                }
+            }
+
+            background: Item {
+                anchors.fill: parent
+                clip: true
+
+                Rectangle {
+                    x: -root.radius 
+                    y: 0
+                    width: parent.width + root.radius 
+                    height: parent.height
+                    
+                    radius: root.radius 
+                    color: filterBox.hovered ? "#0D000000" : "transparent"
+                }
+            }
+
+            popup: Popup {
+                y: filterBox.height + 4 
+                width: filterBox.width
+                implicitHeight: Math.min(250, contentItem.implicitHeight + (padding * 2))
+                padding: 4
+
+                contentItem: ListView {
+                    clip: true
+                    implicitHeight: contentHeight
+                    model: filterBox.popup.visible ? filterBox.delegateModel : null
+                    currentIndex: filterBox.highlightedIndex
+                    ScrollIndicator.vertical: ScrollIndicator {}
+                }
+
+                background: Rectangle {
+                    color: "white"
+                    border.color: "#D1D5DB"
+                    border.width: 1
+                    radius: 12
+                    
+                    layer.enabled: true
+                    layer.effect: MultiEffect {
+                        shadowEnabled: true; shadowBlur: 15; shadowOpacity: 0.1; shadowVerticalOffset: 4
+                    }
+                }
+            }
+
+            delegate: ItemDelegate {
+                width: filterBox.popup.width - (filterBox.popup.padding * 2)
+                height: 25
+                leftPadding: 12; rightPadding: 12; topPadding: 0; bottomPadding: 0
+                hoverEnabled: true
+
+                HoverHandler { cursorShape: Qt.PointingHandCursor }
+
+                contentItem: Text {
+                    text: modelData
+                    color: "#374151"
+                    font.pixelSize: 12
+                    verticalAlignment: Text.AlignVCenter
+                }
+
+                background: Rectangle {
+                    radius: 9
+                    color: appUtils.calculateColor("white", parent.hovered, false)
+                }
+            }
+        }
     }
 }

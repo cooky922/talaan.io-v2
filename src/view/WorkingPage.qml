@@ -105,15 +105,9 @@ Rectangle {
                         anchors.margins: 10
                         spacing: 10
 
-                        // === Search Bar
+                        // === Search Bar (search field + filter combobox)
                         WorkingUI.SearchBar {
-                            Layout.preferredWidth: 300
-                            Layout.preferredHeight: 30
-                        }
-
-                        // === Search Filter
-                        WorkingUI.SearchFilterBox {
-                            Layout.preferredWidth: 140
+                            Layout.preferredWidth: 440
                             Layout.preferredHeight: 30
                         }
 
