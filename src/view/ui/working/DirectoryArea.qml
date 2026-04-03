@@ -55,13 +55,28 @@ Rectangle {
                                 verticalAlignment: Text.AlignLeft
                             }
 
-                            Text {
-                                text: appDirectoryController.sortAscending ? "▲" : "▼"
-                                color: "#6B7280"
-                                font.pixelSize: 8
-
+                            Column {
+                                anchors.verticalCenter: parent.verticalCenter
+                                spacing: -7
                                 rightPadding: 10
-                                visible: appDirectoryController.sortFieldIndex === index
+
+                                Text {
+                                    text: "▲"
+                                    color: "#6B7280"
+                                    font.pixelSize: 8
+
+                                    visible: appDirectoryController.sortFieldIndex === index
+                                    opacity: appDirectoryController.sortAscending ? 1 : 0
+                                }
+
+                                Text {
+                                    text: "▼"
+                                    color: "#6B7280"
+                                    font.pixelSize: 8
+
+                                    visible: appDirectoryController.sortFieldIndex === index
+                                    opacity: appDirectoryController.sortAscending ? 0 : 1
+                                }
                             }
                         }
 
