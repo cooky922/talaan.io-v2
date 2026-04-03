@@ -66,14 +66,6 @@ Rectangle {
                         }
 
                         Rectangle {
-                            anchors.bottom: parent.bottom
-                            anchors.left: parent.left
-                            anchors.right: parent.right
-                            height: 1
-                            color: "#D1D5DB"
-                        }
-
-                        Rectangle {
                             anchors.right: parent.right
                             anchors.verticalCenter: parent.verticalCenter
                             height: 15
@@ -97,6 +89,14 @@ Rectangle {
                     }
                 }
 
+                // bottom border for header
+                Rectangle {
+                    Layout.fillWidth: true
+                    Layout.preferredHeight: 1
+                    Layout.alignment: Qt.AlignTop | Qt.AlignLeft
+                    color: "#D1D5DB"
+                }
+
                 // empty state
                 Components.InfoText {
                     visible: appDirectoryController.totalEntries === 0
@@ -106,11 +106,12 @@ Rectangle {
                     textSize: 42
                     textColor: "#888888"
                     font.bold: true
-                    bottomPadding: 40
+                    topPadding: 40
                 }
 
                 Item {
                     Layout.fillWidth: true
+                    Layout.fillHeight: true
                     visible: appDirectoryController.totalEntries === 0
                 }
 
