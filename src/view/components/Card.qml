@@ -22,9 +22,9 @@ Item {
         source: backgroundShape
         anchors.fill: backgroundShape
         shadowEnabled: true
-        shadowHorizontalOffset: 5
-        shadowVerticalOffset: 5
-        shadowBlur: 0.5 
+        shadowHorizontalOffset: 4
+        shadowVerticalOffset: 4
+        shadowBlur: 4
         shadowColor: appTheme.cardShadowColor
     }
 

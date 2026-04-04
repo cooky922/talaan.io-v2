@@ -7,11 +7,19 @@ import "../../components" as Components
 Rectangle {
     id: root
     
-    color: "transparent"
-    radius: 16
+    color: Qt.rgba(0, 0, 0, 0.15)
+    radius: root.height / 2
     border.width: 1
-    border.color: (searchInput.activeFocus || filterBox.popup.visible) ? appTheme.activeButtonBgColor : "#D1D5DB"
+    border.color: Qt.rgba(0, 0, 0, 0.3)
     clip: true
+
+    function clearSearchText(removeFocus = true) {
+        searchInput.clear()
+        searchDebounce.stop()
+        appDirectoryController.updateSearch("")
+        if (removeFocus)
+            searchInput.focus = false
+    }
 
     RowLayout {
         anchors.fill: parent
@@ -38,13 +46,13 @@ Rectangle {
             Layout.fillWidth: true
             Layout.fillHeight: true
 
-            color: appTheme.darkTextColor
+            color: "#333333"
             font.pixelSize: 12
             placeholderText: {
                 let directoryName = appDirectoryController.currentDirectoryName.toLowerCase()
                 return `Search ${directoryName}s...`
             }
-            placeholderTextColor: Qt.lighter(color, 1.5)
+            placeholderTextColor: color
             
             verticalAlignment: Text.AlignVCenter
             leftPadding: 5
@@ -99,9 +107,7 @@ Rectangle {
                     cursorShape: Qt.PointingHandCursor
                     
                     onClicked: {
-                        searchInput.clear()
-                        searchDebounce.stop()
-                        appDirectoryController.updateSearch("")
+                        root.clearSearchText(false)
                         searchInput.forceActiveFocus() 
                     }
                 }
@@ -111,9 +117,9 @@ Rectangle {
         // > vertical separator line between search and filter
         Rectangle {
             Layout.preferredWidth: 1
-            Layout.preferredHeight: root.height - 12
+            Layout.preferredHeight: root.height - 20
             Layout.alignment: Qt.AlignVCenter
-            color: "#D1D5DB"
+            color: Qt.rgba(0, 0, 0, 0.3)
         }
 
         // > filter combobox
@@ -158,7 +164,7 @@ Rectangle {
                 Text {
                     text: filterBox.displayText
                     font.pixelSize: 12
-                    color: "#374151" 
+                    color: "#333333"
                     verticalAlignment: Text.AlignVCenter
                     Layout.fillWidth: true
                     elide: Text.ElideRight

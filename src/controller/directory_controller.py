@@ -184,7 +184,7 @@ class QMLDirectoryController(QObject):
             self.refresh_table()
 
     @pyqtSlot()
-    def resetOnLogout(self):
+    def resetStates(self):
         self.dir_kind = DirectoryKind.STUDENT
         self._page_index = 0
         self._sort_field_index = 0

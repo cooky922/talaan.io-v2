@@ -1,77 +1,69 @@
 import QtQuick
 import QtQuick.Controls
-import QtQuick.Effects
+import QtQuick.Layouts
 
-Button {
+Item {
     id: root
-    
-    // Custom properties
+
+    property string text: "Label"
     property string iconSource: ""
-    
-    // Translating your PyQt colors
-    property color activeBgColor: appTheme.activeButtonBgColor
-    property color hoverBgColor: Qt.rgba(143/255, 174/255, 68/255, 0.15)
-    property color activeTextColor: "#ffffff"
-    property color inactiveTextColor: appTheme.darkTextColor
-    
-    checkable: true
-    hoverEnabled: true
+    property bool isActive: false
 
-    HoverHandler {
-        cursorShape: Qt.PointingHandCursor
-    }
+    property color defaultTextColor: "#6B7280" // Gray
+    property color activeTextColor: "#111827"  // Very Dark Gray/Black
     
-    leftPadding: 10
-    rightPadding: 10
-    topPadding: 6
-    bottomPadding: 6
+    property color hoverBgColor: "#F3F4F6" // Light gray
+    property color activeBgColor: "#E5E7EB" // Darker gray
 
-    // 1. The Pill Background
-    background: Rectangle {
-        radius: 16
-        color: root.checked ? root.activeBgColor : 
-               root.hovered ? root.hoverBgColor : "transparent"
-    }
+    implicitWidth: 64
+    implicitHeight: 64
 
-    // the content
-    contentItem: Row {
-        spacing: 8
+    signal clicked()
+
+    ColumnLayout {
         anchors.centerIn: parent
+        spacing: 2
 
-        // The Icon (Recolors based on checked state)
-        Item {
-            width: 16
-            height: 16
-            anchors.verticalCenter: parent.verticalCenter
-            visible: root.iconSource !== ""
+        // > icon with dynamic background based on state
+        Rectangle {
+            id: iconBg
+            Layout.alignment: Qt.AlignHCenter
+            Layout.preferredWidth: 45
+            Layout.preferredHeight: 30
+            radius: 16
+
+            color: {
+                if (root.isActive) return Qt.rgba(0, 0, 0, 0.1)
+                if (mouseArea.containsMouse) return Qt.rgba(0, 0, 0, 0.05)
+                return "transparent"
+            }
 
             Image {
-                id: iconImg
+                anchors.centerIn: parent
                 source: root.iconSource
-                sourceSize.width: 16
-                sourceSize.height: 16
-                anchors.fill: parent
-                visible: false // Let MultiEffect draw it
-            }
-
-            MultiEffect {
-                source: iconImg
-                anchors.fill: iconImg
-                // If checked -> White, If inactive -> Dark Gray
-                colorizationColor: root.checked ? root.activeTextColor : root.inactiveTextColor
-                colorization: 1.0
-                brightness: 1.0
+                sourceSize.width: 25
+                sourceSize.height: 25
+                opacity: root.isActive ? 1.0 : 0.75
             }
         }
 
-        // The Label
+        // > label
         Text {
+            Layout.alignment: Qt.AlignHCenter
             text: root.text
-            font.pixelSize: 12
-            // Bold when checked, normal when inactive
-            font.bold: root.checked 
-            color: root.checked ? root.activeTextColor : root.inactiveTextColor
-            anchors.verticalCenter: parent.verticalCenter
+            font.pixelSize: 11
+            font.bold: root.isActive
+            font.family: appTheme.rethinkSansFontName
+            color: "#333333"
+            opacity: root.isActive ? 1.0 : 0.75
         }
+    }
+
+    MouseArea {
+        id: mouseArea
+        anchors.fill: parent
+        hoverEnabled: true
+        cursorShape: Qt.PointingHandCursor
+        onClicked: root.clicked()
     }
 }

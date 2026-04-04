@@ -22,10 +22,14 @@ Button {
     }
 
     background: Rectangle {
-        color: appUtils.calculateColor(appTheme.headerButtonBgColor, accountArea.hovered, accountMenu.opened)
-        border.color: Qt.darker(appTheme.headerButtonBgColor, 1.2)
+        color: {
+            if (accountArea.down) return Qt.rgba(0, 0, 0, 0.25)
+            if (accountArea.hovered) return Qt.rgba(0, 0, 0, 0.2)
+            return Qt.rgba(0, 0, 0, 0.15)
+        }
+        border.color: Qt.rgba(0, 0, 0, 0.3)
         border.width: 1
-        radius: 16
+        radius: accountArea.height / 2
     }
 
     // main button content
@@ -132,7 +136,7 @@ Button {
             radius: 10
         }
 
-        // --- THE MENU ITEMS ---
+        // > menu items
         CustomMenuItem {
             text: "Settings"
             iconSrc: "../../../../assets/images/icons/settings-dark.svg"
