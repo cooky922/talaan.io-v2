@@ -118,7 +118,7 @@ Rectangle {
                         else 
                             return "Enter as Viewer"
                     }
-                    buttonColor: Qt.rgba(0, 0, 0, 0.75)
+                    buttonColor: Qt.rgba(0, 0, 0, 0.60)
                     Layout.fillWidth: true
                     Layout.alignment: Qt.AlignBottom | Qt.AlignHCenter
 
@@ -134,6 +134,9 @@ Rectangle {
 
     Component.onCompleted: {
         let comp = Qt.createComponent("WorkingPage.qml")
+        if (comp.status === Component.Error) {
+            appUtils.printLog(`QML Error: ${comp.errorString()}`) // This will tell you exactly which line has the missing bracket!
+        }
         preloadedWorkingPage = comp.createObject(null)
     }
 }

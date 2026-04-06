@@ -1,7 +1,8 @@
 from dataclasses import dataclass
+from enum import Enum
 from pathlib import Path
 from PyQt6.QtGui import QFontDatabase # type: ignore
-from PyQt6.QtCore import QObject, pyqtProperty # type: ignore
+from PyQt6.QtCore import QObject, pyqtProperty, pyqtSlot, pyqtSignal # type: ignore
 
 class classproperty(object):
     def __init__(self, fget):
@@ -52,22 +53,50 @@ class FontLoader:
     def getFamilyName(self, key):
         return self._fonts.get(key.upper(), 'DEFAULT')['family_name']
     
+@dataclass
+class ColorScheme:
+    background_color : str
+    background_color_last : str
+    active_button_color : str 
+    active_button_border_color : str
+
+class ColorSchemeKind(Enum):
+    GREEN = ColorScheme(
+        background_color = '#E6FF76',
+        background_color_last = '#C4E047',
+        active_button_color = '#93A932',
+        active_button_border_color = '#687B11'
+    )
+    PINK = ColorScheme(
+        background_color = "#FFCFE4",
+        background_color_last = '#FF81C8',
+        active_button_color = "#D2509A",
+        active_button_border_color = "#9B336E"
+    )
+    PURPLE = ColorScheme(
+        background_color = '#E1B2f5',
+        background_color_last = '#CE5CFF',
+        active_button_color = "#972AC6",
+        active_button_border_color = "#7918A3"
+    )
+    BLUE = ColorScheme(
+        background_color = "#98E0FF",
+        background_color_last = '#4887C3',
+        active_button_color = "#24629B",
+        active_button_border_color = "#0F4374"
+    )
+    ORANGE = ColorScheme(
+        background_color = "#FFD08E",
+        background_color_last = "#FFBD71",
+        active_button_color = "#FF983F",
+        active_button_border_color = "#FF8F2D"
+    )
+
 @dataclass(frozen = True, init = False)
 class Theme:
-    # Colors
-    MAIN_BG_COLOR = '#E6FF76'
-    MAIN_BG_COLOR_LAST = '#C4E047'
-
     CARD_BG_COLOR = '#FFFFFF'
     CARD_SHADOW_COLOR = "#EBEBEB"
 
-    HEADER_BG_COLOR = '#EFFFA4'
-    HEADER_BUTTON_BG_COLOR = '#E8F3B5'
-
-    ACTIVE_BUTTON_BG_COLOR = '#93A932'
-    ACTIVE_BUTTON_BORDER_COLOR = '#687B11'
-
-    LOGIN_BUTTON_BG_COLOR = '#5759D7'
     LOGOUT_BUTTON_BG_COLOR = '#F45742'
 
     DARK_TEXT_COLOR = '#333333'
@@ -89,14 +118,17 @@ class Theme:
         return self._RETHINK_SANS_FONT_NAME
 
 class QMLAppTheme(QObject):
+    themeChanged = pyqtSignal()
+
     def __init__(self, parent = None):
         super().__init__(parent)
+        self.color_scheme_kind = ColorSchemeKind.GREEN # by default
 
-    @pyqtProperty(str)
-    def mainBgColor(self): return Theme.MAIN_BG_COLOR
+    @pyqtProperty(str, notify = themeChanged)
+    def mainBgColor(self): return self.color_scheme_kind.value.background_color
 
-    @pyqtProperty(str)
-    def mainBgColorLast(self): return Theme.MAIN_BG_COLOR_LAST
+    @pyqtProperty(str, notify = themeChanged)
+    def mainBgColorLast(self): return self.color_scheme_kind.value.background_color_last
 
     @pyqtProperty(str)
     def cardBgColor(self): return Theme.CARD_BG_COLOR
@@ -104,20 +136,11 @@ class QMLAppTheme(QObject):
     @pyqtProperty(str)
     def cardShadowColor(self): return Theme.CARD_SHADOW_COLOR
 
-    @pyqtProperty(str)
-    def headerBgColor(self): return Theme.HEADER_BG_COLOR
+    @pyqtProperty(str, notify = themeChanged)
+    def activeButtonBgColor(self): return self.color_scheme_kind.value.active_button_color
 
-    @pyqtProperty(str)
-    def headerButtonBgColor(self): return Theme.HEADER_BUTTON_BG_COLOR
-
-    @pyqtProperty(str)
-    def activeButtonBgColor(self): return Theme.ACTIVE_BUTTON_BG_COLOR
-
-    @pyqtProperty(str)
-    def activeButtonBorderColor(self): return Theme.ACTIVE_BUTTON_BORDER_COLOR
-
-    @pyqtProperty(str)
-    def loginButtonBgColor(self): return Theme.LOGIN_BUTTON_BG_COLOR
+    @pyqtProperty(str, notify = themeChanged)
+    def activeButtonBorderColor(self): return self.color_scheme_kind.value.active_button_border_color
 
     @pyqtProperty(str)
     def logoutButtonBgColor(self): return Theme.LOGOUT_BUTTON_BG_COLOR
@@ -130,3 +153,24 @@ class QMLAppTheme(QObject):
 
     @pyqtProperty(str)
     def rethinkSansFontName(self): return Theme.RETHINK_SANS_FONT_NAME
+
+    @pyqtSlot(int)
+    def setThemeColor(self, index):
+        current_index = list(ColorSchemeKind).index(self.color_scheme_kind)
+        if (current_index != index):
+            self.color_scheme_kind = list(ColorSchemeKind)[index]
+            self.themeChanged.emit()
+
+    @pyqtProperty(int, notify = themeChanged)
+    def themeColorIndex(self):
+        return list(ColorSchemeKind).index(self.color_scheme_kind)
+    
+    @pyqtProperty('QVariantList')
+    def allThemeColors(self):
+        return [
+            {
+                'name': item.name.title(),
+                'color1': item.value.background_color,
+                'color2': item.value.background_color_last
+            } for item in ColorSchemeKind
+        ]

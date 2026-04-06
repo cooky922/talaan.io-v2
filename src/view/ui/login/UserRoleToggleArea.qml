@@ -40,12 +40,12 @@ Rectangle {
             background: Rectangle {
                 color: {
                     if (app.activeRole === role)
-                        return Qt.rgba(0, 0, 0, 0.75)
+                        return Qt.rgba(0, 0, 0, 0.60)
                     else {
-                        return toggleButton.hovered ? Qt.rgba(0, 0, 0, 0.15) : Qt.rgba(0, 0, 0, 0.10)
+                        return toggleButton.hovered ? Qt.rgba(0, 0, 0, 0.20) : Qt.rgba(0, 0, 0, 0.10)
                     }
                 }
-                border.color: Qt.rgba(0, 0, 0, 0.75)
+                border.color: Qt.rgba(0, 0, 0, 0.60)
                 border.width: app.activeRole === role ? 2 : 0
                 radius: 20
             }

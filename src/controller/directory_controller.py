@@ -56,7 +56,7 @@ class QMLDirectoryController(QObject):
     def pageIndex(self):
         return self._page_index
     
-    @pyqtProperty(int)
+    @pyqtProperty(int, notify = paginationChanged)
     def pageSize(self):
         return self._page_size
 
@@ -181,6 +181,14 @@ class QMLDirectoryController(QObject):
         target_index = page_number - 1
         if 0 <= target_index < self.totalPages:
             self._page_index = target_index
+            self.refresh_table()
+
+    @pyqtSlot(int)
+    def setPageSize(self, size):
+        if self._page_size != size:
+            self._page_size = size
+            self._page_index = 0
+            self.paginationChanged.emit()
             self.refresh_table()
 
     @pyqtSlot()
