@@ -15,12 +15,15 @@ Rectangle {
     property var pendingNewData: null
     property string currentSection: "directory" // options: "dashboard", "directory", "history"
     
+    // > sidebar state
+    property bool isSidebarCollapsed: false
+
     function showToast(message, isError) {
         toast.show(message, isError)
     }
 
     function handleEntryDialogResponse(response) {
-        toast.showToast(response.message, !response.success)
+        workingPage.showToast(response.message, !response.success) 
         recordDialog.hide()
         // reset values
         pendingAction = ""
@@ -29,333 +32,372 @@ Rectangle {
     }
 
     // > main layout
-    RowLayout {
+    ColumnLayout {
         anchors.fill: parent
         spacing: 0
 
-        // > sidebar panel
+        // > top area is split into 2 zones:
+        //   - fixed logo area
+        //   - dynamic content area
         Rectangle {
-            Layout.fillHeight: true
-            Layout.preferredWidth: 80
-            color: Qt.rgba(246, 246, 246, 0.25)
-            
-            // > right border
-            Rectangle {
-                anchors.right: parent.right
-                anchors.top: parent.top
-                anchors.bottom: parent.bottom
-                width: 2.5
-                color: Qt.rgba(0, 0, 0, 0.10)
-            }
-
-            ColumnLayout {
-                anchors.left: parent.left
-                anchors.right: parent.right
-                anchors.top: parent.top
-                anchors.leftMargin: 6
-                anchors.rightMargin: 6
-                anchors.topMargin: 10
-                anchors.bottomMargin: 25
-                spacing: 4
-
-                component Separator : Rectangle {
-                    height: 2.5
-                    width: 50
-                    color: Qt.rgba(0, 0, 0, 0.10)
-                    radius: 2.5
-                }
-
-                // > app logo at the top
-                Rectangle {
-                    Layout.alignment: Qt.AlignHCenter
-                    Layout.margins: 10
-                    width: 50
-                    height: 50
-                    radius: 13
-
-                    color: Qt.rgba(0, 0, 0, 0.15)
-                    border.color: Qt.rgba(0, 0, 0, 0.3)
-                    border.width: 2
-                    
-                    Image {
-                        source: "../../assets/images/icons/app-logo.svg" // Replace with your logo icon
-                        sourceSize.width: 40
-                        sourceSize.height: 40
-                        anchors.centerIn: parent
-                    }
-                }
-
-                // > dashboard toggle
-                Components.ToggleButton {
-                    Layout.alignment: Qt.AlignHCenter
-                    text: "Dashboard"
-                    iconSource: "../../../assets/images/icons/dashboard-dark.svg"
-                    isActive: workingPage.currentSection === "dashboard"
-                    onClicked: {
-                        searchBar.clearSearchText()
-                        appDirectoryController.resetStates()
-                        workingPage.currentSection = "dashboard"
-                        workingPage.isEditMode = false
-                    }
-                }
-
-                Separator {
-                    Layout.alignment: Qt.AlignHCenter
-                }
-                
-                // > students toggle
-                Components.ToggleButton {
-                    Layout.alignment: Qt.AlignHCenter
-                    text: "Students"
-                    iconSource: "../../../assets/images/icons/students-dark.svg"
-                    isActive: workingPage.currentSection === "directory" && appDirectoryController.currentDirectoryName === "Student"
-                    onClicked: { 
-                        appDirectoryController.changeDirectory("Student")
-                        workingPage.currentSection = "directory"
-                        workingPage.isEditMode = false 
-                    }
-                }
-
-                // > programs toggle
-                Components.ToggleButton {
-                    Layout.alignment: Qt.AlignHCenter
-                    text: "Programs"
-                    iconSource: "../../../assets/images/icons/programs-dark.svg"
-                    isActive: workingPage.currentSection === "directory" && appDirectoryController.currentDirectoryName === "Program"
-                    onClicked: { 
-                        appDirectoryController.changeDirectory("Program")
-                        workingPage.currentSection = "directory"
-                        workingPage.isEditMode = false 
-                    }
-                }
-
-                // > colleges toggle
-                Components.ToggleButton {
-                    Layout.alignment: Qt.AlignHCenter
-                    text: "Colleges"
-                    iconSource: "../../../assets/images/icons/colleges-dark.svg"
-                    isActive: workingPage.currentSection === "directory" && appDirectoryController.currentDirectoryName === "College"
-                    onClicked: { 
-                        appDirectoryController.changeDirectory("College")
-                        workingPage.currentSection = "directory"
-                        workingPage.isEditMode = false 
-                    }
-                }
-
-                Separator {
-                    Layout.alignment: Qt.AlignHCenter
-                }
-
-                // > history toggle
-                Components.ToggleButton {
-                    Layout.alignment: Qt.AlignHCenter
-                    text: "History"
-                    iconSource: "../../../assets/images/icons/history-dark.svg"
-                    isActive: workingPage.currentSection === "history"
-                    onClicked: {
-                        searchBar.clearSearchText()
-                        appDirectoryController.resetStates() 
-                        workingPage.currentSection = "history"
-                        workingPage.isEditMode = false
-                    }
-                }
-
-                Item { Layout.fillHeight: true }
-            }
-        }
-
-        // > content panel
-        Item {
             Layout.fillWidth: true
-            Layout.fillHeight: true
+            Layout.preferredHeight: 60
+            color: "transparent"
 
-            component AccountArea: WorkingUI.AccountArea {
-                roleText: app.activeRole === 0 ? "Admin" : "Viewer"
-
-                onSettingsRequested: {}
-                onAboutRequested: {}
-                onLogoutRequested: {
-                    workingPage.isEditMode = false
-                    appDirectoryController.resetStates()
-                    stackView.pop(StackView.Immediate)
-                }
-            }
-
-            // => directory section (default)
-            ColumnLayout {
+            RowLayout {
                 anchors.fill: parent
-                anchors.margins: 20
-                spacing: 10
-                visible: workingPage.currentSection === "directory"
+                spacing: 0
 
-                // === header zone
-                RowLayout {
-                    Layout.fillWidth: true
+                // Logo
+                Item {
+                    Layout.preferredWidth: 80
+                    Layout.fillHeight: true
                     
-                    WorkingUI.SearchBar {
-                        id: searchBar
-                        Layout.preferredWidth: 440 
-                        Layout.preferredHeight: 40
-                        Layout.alignment: Qt.AlignLeft | Qt.AlignVCenter
-                    }
-
-                    Item { Layout.fillWidth: true } // Spacer pushes account to the right
-
-                    AccountArea {
-                        Layout.preferredHeight: 40
-                        Layout.alignment: Qt.AlignRight | Qt.AlignVCenter
-                    }
-                }
-
-                // --- Control Zone ---
-                RowLayout {
-                    Layout.fillWidth: true
-                    spacing: 10
-
-                    Item { Layout.fillWidth: true } // Spacer pushes buttons to the right
-
-                    // === Add Button (shown only in edit mode)
-                    Components.ActionButton {
-                        text: "Add " + appDirectoryController.currentDirectoryName
-                        textSize: 12
-                        buttonColor: appTheme.activeButtonBgColor
-                        iconSource: "../../../assets/images/icons/add-light.svg"
-                        visible: workingPage.isEditMode
-                        onClicked: {
-                            recordDialog.openForAdd()
+                    // > background that collapses with the sidebar
+                    Rectangle {
+                        anchors.left: parent.left
+                        anchors.top: parent.top
+                        anchors.bottom: parent.bottom
+                        width: workingPage.isSidebarCollapsed ? 0 : 80
+                        color: Qt.rgba(246, 246, 246, 0.25)
+                        clip: true
+                        
+                        Behavior on width {
+                            NumberAnimation { duration: 300; easing.type: Easing.InOutQuad }
                         }
 
-                        topPadding: 7.5
-                        bottomPadding: 7.5
+                        Rectangle {
+                            anchors.right: parent.right
+                            anchors.top: parent.top
+                            anchors.bottom: parent.bottom
+                            width: 2.5
+                            color: Qt.rgba(0, 0, 0, 0.10)
+                        }
                     }
 
-                    // === Edit / Done Toggle Button
-                    Components.ActionButton {
-                        text: workingPage.isEditMode ? "Done" : "Edit"
-                        textSize: 12
-                        iconSource: workingPage.isEditMode ? "../../../assets/images/icons/done-dark.svg" : "../../../assets/images/icons/edit-light.svg"
+                    // > clickable app logo (always visible)
+                    Rectangle {
+                        anchors.horizontalCenter: parent.horizontalCenter
+                        anchors.verticalCenter: parent.verticalCenter
+                        width: 60
+                        height: 40
+                        radius: 20
                         
-                        // Change colors depending on mode
-                        buttonColor: workingPage.isEditMode ? "#F3F4F6" : appTheme.activeButtonBgColor
-                        textColor: workingPage.isEditMode ? appTheme.darkTextColor : "#FFFFFF"
-                        bordered: workingPage.isEditMode
+                        color: logoMouse.containsMouse ? Qt.rgba(0, 0, 0, 0.25) : Qt.rgba(0, 0, 0, 0.15) 
+                        border.color: Qt.rgba(0, 0, 0, 0.3)
+                        border.width: 2
                         
-                        onClicked: workingPage.isEditMode = !workingPage.isEditMode
+                        Image {
+                            source: "../../assets/images/icons/app-logo.svg" 
+                            sourceSize.width: 35
+                            sourceSize.height: 35
+                            anchors.centerIn: parent
+                        }
 
-                        topPadding: 7.5
-                        bottomPadding: 7.5
-
-                        visible: app.activeRole === 0
+                        MouseArea {
+                            id: logoMouse
+                            anchors.fill: parent
+                            hoverEnabled: true
+                            cursorShape: Qt.PointingHandCursor
+                            onClicked: workingPage.isSidebarCollapsed = !workingPage.isSidebarCollapsed
+                        }
                     }
                 }
 
-                // > data zone
-                Components.Card {
+                // > top content area (search / title + account)
+                Item {
                     Layout.fillWidth: true
                     Layout.fillHeight: true
 
-                    ColumnLayout {
+                    RowLayout {
                         anchors.fill: parent
                         anchors.leftMargin: 20
                         anchors.rightMargin: 20
-                        anchors.topMargin: 10
-                        anchors.bottomMargin: 10
                         spacing: 15
 
-                        // Pagination is now properly sitting above the table
-                        WorkingUI.PaginationArea {
-                            Layout.fillWidth: true
-                            Layout.alignment: Qt.AlignTop
-                            Layout.leftMargin: 7
-                            Layout.rightMargin: 7
-                            Layout.topMargin: 5
-                            Layout.bottomMargin: 0
+                        // Show SearchBar in Directory
+                        WorkingUI.SearchBar {
+                            id: searchBar
+                            visible: workingPage.currentSection === "directory"
+                            Layout.preferredWidth: 440 
+                            Layout.preferredHeight: 40
+                            Layout.alignment: Qt.AlignLeft | Qt.AlignVCenter
                         }
 
-                        WorkingUI.DirectoryArea {
-                            Layout.fillWidth: true
-                            Layout.fillHeight: true
+                        // Show Dashboard Title
+                        Components.TitleText { 
+                            visible: workingPage.currentSection === "dashboard"
+                            text: "Dashboard"
+                            textSize: 28 
+                            Layout.alignment: Qt.AlignLeft | Qt.AlignVCenter
+                        }
+
+                        // Show History Title
+                        Components.TitleText { 
+                            visible: workingPage.currentSection === "history"
+                            text: "History"
+                            textSize: 28 
+                            Layout.alignment: Qt.AlignLeft | Qt.AlignVCenter
+                        }
+
+                        Item { Layout.fillWidth: true }
+
+                        WorkingUI.AccountArea {
+                            Layout.preferredHeight: 40
+                            Layout.alignment: Qt.AlignRight | Qt.AlignVCenter
+                            roleText: app.activeRole === 0 ? "Admin" : "Viewer"
+
+                            onSettingsRequested: {}
+                            onAboutRequested: {}
+                            onLogoutRequested: {
+                                workingPage.isEditMode = false
+                                appDirectoryController.resetStates()
+                                stackView.pop(StackView.Immediate)
+                            }
                         }
                     }
                 }
             }
+        }
 
-            // => dashboard section
-            ColumnLayout {
-                anchors.fill: parent
-                anchors.margins: 20
-                spacing: 10
-                visible: workingPage.currentSection === "dashboard"
+        // > main body is split into 2 zones:
+        //   - collapsible sidebar for navigation between sections
+        //   - content area that changes based on the selected section
+        RowLayout {
+            Layout.fillWidth: true
+            Layout.fillHeight: true
+            spacing: 0
 
-                RowLayout {
-                    Layout.fillWidth: true
-                    
-                    Components.TitleText { 
+            // > sidebar panel
+            Rectangle {
+                Layout.fillHeight: true
+                Layout.preferredWidth: workingPage.isSidebarCollapsed ? 0 : 80 
+                color: Qt.rgba(246, 246, 246, 0.25)
+                clip: true 
+                
+                // > smooth collapse animation matches the logo area
+                Behavior on Layout.preferredWidth {
+                    NumberAnimation { duration: 300; easing.type: Easing.InOutQuad }
+                }
+                
+                // > right border
+                Rectangle {
+                    anchors.right: parent.right
+                    anchors.top: parent.top
+                    anchors.bottom: parent.bottom
+                    width: 2.5
+                    color: Qt.rgba(0, 0, 0, 0.10)
+                }
+
+                ColumnLayout {
+                    width: 80
+                    height: parent.height
+                    anchors.top: parent.top
+                    anchors.left: parent.left
+                    anchors.topMargin: 10
+                    anchors.bottomMargin: 25
+                    spacing: 4
+
+                    component Separator : Rectangle {
+                        height: 2.5
+                        width: 50
+                        color: Qt.rgba(0, 0, 0, 0.10)
+                        radius: 2.5
+                    }
+
+                    // > dashboard toggle
+                    Components.ToggleButton {
+                        Layout.alignment: Qt.AlignHCenter
                         text: "Dashboard"
-                        textSize: 28 
-                        Layout.alignment: Qt.AlignLeft | Qt.AlignVCenter
+                        iconSource: "../../../assets/images/icons/dashboard-dark.svg"
+                        isActive: workingPage.currentSection === "dashboard"
+                        onClicked: {
+                            searchBar.clearSearchText()
+                            appDirectoryController.resetStates()
+                            workingPage.currentSection = "dashboard"
+                            workingPage.isEditMode = false
+                        }
                     }
 
-                    Item { Layout.fillWidth: true } // Spacer pushes account to the right
-
-                    AccountArea {
-                        Layout.preferredHeight: 40
-                        Layout.alignment: Qt.AlignRight | Qt.AlignVCenter
+                    Separator { Layout.alignment: Qt.AlignHCenter }
+                    
+                    // > students toggle
+                    Components.ToggleButton {
+                        Layout.alignment: Qt.AlignHCenter
+                        text: "Students"
+                        iconSource: "../../../assets/images/icons/students-dark.svg"
+                        isActive: workingPage.currentSection === "directory" && appDirectoryController.currentDirectoryName === "Student"
+                        onClicked: { 
+                            appDirectoryController.changeDirectory("Student")
+                            workingPage.currentSection = "directory"
+                            workingPage.isEditMode = false 
+                        }
                     }
-                }
 
-                Components.InfoText { 
-                    text: "Dashboard content goes here..."
-                    textColor: "black"
-                }
+                    // > programs toggle
+                    Components.ToggleButton {
+                        Layout.alignment: Qt.AlignHCenter
+                        text: "Programs"
+                        iconSource: "../../../assets/images/icons/programs-dark.svg"
+                        isActive: workingPage.currentSection === "directory" && appDirectoryController.currentDirectoryName === "Program"
+                        onClicked: { 
+                            appDirectoryController.changeDirectory("Program")
+                            workingPage.currentSection = "directory"
+                            workingPage.isEditMode = false 
+                        }
+                    }
 
-                Item { 
-                    Layout.fillHeight: true
-                    Layout.fillWidth: true 
-                }                
+                    // > colleges toggle
+                    Components.ToggleButton {
+                        Layout.alignment: Qt.AlignHCenter
+                        text: "Colleges"
+                        iconSource: "../../../assets/images/icons/colleges-dark.svg"
+                        isActive: workingPage.currentSection === "directory" && appDirectoryController.currentDirectoryName === "College"
+                        onClicked: { 
+                            appDirectoryController.changeDirectory("College")
+                            workingPage.currentSection = "directory"
+                            workingPage.isEditMode = false 
+                        }
+                    }
+
+                    Separator { Layout.alignment: Qt.AlignHCenter }
+
+                    // > history toggle
+                    Components.ToggleButton {
+                        Layout.alignment: Qt.AlignHCenter
+                        text: "History"
+                        iconSource: "../../../assets/images/icons/history-dark.svg"
+                        isActive: workingPage.currentSection === "history"
+                        onClicked: {
+                            searchBar.clearSearchText()
+                            appDirectoryController.resetStates() 
+                            workingPage.currentSection = "history"
+                            workingPage.isEditMode = false
+                        }
+                    }
+
+                    Item { Layout.fillHeight: true }
+                }
             }
 
-            // => history section
-            ColumnLayout {
-                anchors.fill: parent
-                anchors.margins: 20
-                spacing: 10
-                visible: workingPage.currentSection === "history"
+            // > content panel
+            Item {
+                Layout.fillWidth: true
+                Layout.fillHeight: true
 
-                RowLayout {
-                    Layout.fillWidth: true
-                    
-                    Components.TitleText { 
-                        text: "History"
-                        textSize: 28 
-                        Layout.alignment: Qt.AlignLeft | Qt.AlignVCenter
+                // => directory section (default)
+                ColumnLayout {
+                    anchors.fill: parent
+                    anchors.leftMargin: 20
+                    anchors.rightMargin: 20
+                    anchors.topMargin: 0
+                    anchors.bottomMargin: 20
+                    spacing: 10
+                    visible: workingPage.currentSection === "directory"
+
+                    // > control zone
+                    RowLayout {
+                        Layout.fillWidth: true
+                        spacing: 10
+
+                        Item { Layout.fillWidth: true } 
+
+                        Components.ActionButton {
+                            text: "Add " + appDirectoryController.currentDirectoryName
+                            textSize: 12
+                            buttonColor: appTheme.activeButtonBgColor
+                            iconSource: "../../../assets/images/icons/add-light.svg"
+                            visible: workingPage.isEditMode
+                            onClicked: recordDialog.openForAdd()
+                            topPadding: 7.5
+                            bottomPadding: 7.5
+                        }
+
+                        Components.ActionButton {
+                            text: workingPage.isEditMode ? "Done" : "Edit"
+                            textSize: 12
+                            iconSource: workingPage.isEditMode ? "../../../assets/images/icons/done-dark.svg" : "../../../assets/images/icons/edit-light.svg"
+                            buttonColor: workingPage.isEditMode ? "#F3F4F6" : appTheme.activeButtonBgColor
+                            textColor: workingPage.isEditMode ? appTheme.darkTextColor : "#FFFFFF"
+                            bordered: workingPage.isEditMode
+                            onClicked: workingPage.isEditMode = !workingPage.isEditMode
+                            topPadding: 7.5
+                            bottomPadding: 7.5
+                            visible: app.activeRole === 0
+                        }
                     }
 
-                    Item { Layout.fillWidth: true }
+                    // > data zone
+                    Components.Card {
+                        Layout.fillWidth: true
+                        Layout.fillHeight: true
 
-                    AccountArea {
-                        Layout.preferredHeight: 40
-                        Layout.alignment: Qt.AlignRight | Qt.AlignVCenter
+                        ColumnLayout {
+                            anchors.fill: parent
+                            anchors.leftMargin: 20
+                            anchors.rightMargin: 20
+                            anchors.topMargin: 10
+                            anchors.bottomMargin: 10
+                            spacing: 15
+
+                            WorkingUI.PaginationArea {
+                                Layout.fillWidth: true
+                                Layout.alignment: Qt.AlignTop
+                                Layout.leftMargin: 7
+                                Layout.rightMargin: 7
+                                Layout.topMargin: 5
+                                Layout.bottomMargin: 0
+                            }
+
+                            WorkingUI.DirectoryArea {
+                                Layout.fillWidth: true
+                                Layout.fillHeight: true
+                            }
+                        }
                     }
                 }
 
-                Components.InfoText { 
-                    text: "History content goes here..."
-                    textColor: "black"
+                // => dashboard section
+                ColumnLayout {
+                    anchors.fill: parent
+                    anchors.leftMargin: 20
+                    anchors.rightMargin: 20
+                    anchors.topMargin: 0
+                    anchors.bottomMargin: 20
+                    spacing: 10
+                    visible: workingPage.currentSection === "dashboard"
+
+                    Components.InfoText { 
+                        text: "Dashboard content goes here..."
+                        textColor: "black"
+                    }
+
+                    Item { Layout.fillHeight: true; Layout.fillWidth: true }                
                 }
 
-                Item { 
-                    Layout.fillHeight: true
-                    Layout.fillWidth: true 
-                }                
+                // => history section
+                ColumnLayout {
+                    anchors.fill: parent
+                    anchors.leftMargin: 20
+                    anchors.rightMargin: 20
+                    anchors.topMargin: 0
+                    anchors.bottomMargin: 20
+                    spacing: 10
+                    visible: workingPage.currentSection === "history"
+
+                    Components.InfoText { 
+                        text: "History content goes here..."
+                        textColor: "black"
+                    }
+
+                    Item { Layout.fillHeight: true; Layout.fillWidth: true }                
+                }
             }
         }
     }
 
     // > global UI components
-    WorkingUI.Toast {
-        id: toast
-    }
+    WorkingUI.Toast { id: toast }
 
     WorkingUI.EntryDialog {
         id: recordDialog
