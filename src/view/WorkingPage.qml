@@ -7,6 +7,16 @@ import "ui/working" as WorkingUI
 Rectangle {
     id: workingPage
     color: "transparent"
+
+    Rectangle {
+        anchors.fill: parent
+        z: -1
+        gradient: Gradient {
+            orientation: Gradient.Vertical
+            GradientStop { position: 0.0; color: appTheme.mainBgColor }
+            GradientStop { position: 1.0; color: appTheme.mainBgColorLast } 
+        }
+    }
     
     // > states 
     property bool isEditMode: false
@@ -18,12 +28,8 @@ Rectangle {
     // > sidebar state
     property bool isSidebarCollapsed: false
 
-    function showToast(message, isError) {
-        toast.show(message, isError)
-    }
-
     function handleEntryDialogResponse(response) {
-        workingPage.showToast(response.message, !response.success) 
+        toast.showToast(response.message, !response.success) 
         recordDialog.hide()
         // reset values
         pendingAction = ""

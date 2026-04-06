@@ -16,14 +16,6 @@ ApplicationWindow {
     // > state to track the active role (Admin = 0, Viewer = 1)
     property int activeRole : 0
 
-    background: Rectangle {
-        gradient: Gradient {
-            orientation: Gradient.Vertical
-            GradientStop { position: 0.0; color: appTheme.mainBgColor }
-            GradientStop { position: 1.0; color: appTheme.mainBgColorLast } 
-        }
-    }
-
     StackView {
         id: stackView
         anchors.fill: parent

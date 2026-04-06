@@ -8,6 +8,60 @@ Rectangle {
     id: loginPage
     color: "transparent"
 
+    Rectangle {
+        id: animatedBg
+        anchors.fill: parent
+        z: -1
+
+        gradient: Gradient {
+            orientation: Gradient.Vertical
+            GradientStop { id: stop1; position: 0.0; color: appTheme.mainBgColor }
+            GradientStop { id: stop2; position: 1.0; color: appTheme.mainBgColorLast }
+        }
+
+        // > animation loop
+        SequentialAnimation {
+            running: true
+            loops: Animation.Infinite
+
+            // > transition to pink
+            ParallelAnimation {
+                ColorAnimation { target: stop1; property: "color"; to: "#ffbbf4"; duration: 4000; easing.type: Easing.InOutSine }
+                ColorAnimation { target: stop2; property: "color"; to: "#ff81c8"; duration: 4000; easing.type: Easing.InOutSine }
+            }
+            
+            // > transition to purple
+            ParallelAnimation {
+                ColorAnimation { target: stop1; property: "color"; to: "#e1b2f5"; duration: 4000; easing.type: Easing.InOutSine }
+                ColorAnimation { target: stop2; property: "color"; to: "#ce5cff"; duration: 4000; easing.type: Easing.InOutSine }
+            }
+            
+            // > transition to blue
+            ParallelAnimation {
+                ColorAnimation { target: stop1; property: "color"; to: "#75aaff"; duration: 4000; easing.type: Easing.InOutSine }
+                ColorAnimation { target: stop2; property: "color"; to: "#4887c3"; duration: 4000; easing.type: Easing.InOutSine }
+            }
+            
+            // > transition to yellow
+            ParallelAnimation {
+                ColorAnimation { target: stop1; property: "color"; to: "#fff596"; duration: 4000; easing.type: Easing.InOutSine }
+                ColorAnimation { target: stop2; property: "color"; to: "#edde4e"; duration: 4000; easing.type: Easing.InOutSine }
+            }
+
+            // > transition to orange
+            ParallelAnimation {
+                ColorAnimation { target: stop1; property: "color"; to: "#f2bc6f"; duration: 4000; easing.type: Easing.InOutSine }
+                ColorAnimation { target: stop2; property: "color"; to: "#ffa45e"; duration: 4000; easing.type: Easing.InOutSine }
+            }
+
+            // > transition back to green
+            ParallelAnimation {
+                ColorAnimation { target: stop1; property: "color"; to: appTheme.mainBgColor; duration: 4000; easing.type: Easing.InOutSine }
+                ColorAnimation { target: stop2; property: "color"; to: appTheme.mainBgColorLast; duration: 4000; easing.type: Easing.InOutSine }
+            }
+        }
+    }
+
     property var preloadedWorkingPage: null
 
     ColumnLayout {
@@ -31,40 +85,42 @@ Rectangle {
             Layout.bottomMargin: loginPage.height * 0.075
         }
 
-        // = Login Code (below Description)
+        // = Login Card (below Description)
         Components.Card {
             id: loginCard
+            bordered: true
+            cardColor: Qt.rgba(246, 246, 246, 0.25)
             width: 250
-            height: 275
+            height: 200
 
             Layout.alignment: Qt.AlignHCenter
 
             ColumnLayout {
+                id: cardLayout
                 anchors.fill: parent
-                anchors.margins: 25
-                spacing: 15
-
-                // == Select a Role
-                Components.TitleText {
-                    text: "Select a Role"
-                    textSize: 24
-                    Layout.alignment: Qt.AlignHCenter
-                }
-
+                anchors.leftMargin: 20
+                anchors.rightMargin: 20
+                anchors.topMargin: 10
+                anchors.bottomMargin: 20
+                spacing: 5
+ 
                 // == User Role Toggle Area
                 LoginUI.UserRoleToggleArea {
                     Layout.fillWidth: true
-                    Layout.preferredHeight: 36
+                    Layout.alignment: Qt.AlignTop | Qt.AlignHCenter
                 }
-
-                // > pushes the login button to the bottom
-                Item { Layout.fillHeight: true } 
 
                 // == Login Button
                 Components.ActionButton {
-                    text: "Login"
-                    buttonColor: appTheme.loginButtonBgColor
+                    text: {
+                        if (app.activeRole === 0)
+                            return "Enter as Admin"
+                        else 
+                            return "Enter as Viewer"
+                    }
+                    buttonColor: Qt.rgba(0, 0, 0, 0.75)
                     Layout.fillWidth: true
+                    Layout.alignment: Qt.AlignBottom | Qt.AlignHCenter
 
                     onClicked: stackView.push(preloadedWorkingPage, StackView.Immediate)
                 }
