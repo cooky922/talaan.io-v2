@@ -21,8 +21,8 @@ RowLayout {
             let to = appDirectoryController.pageIndex * appDirectoryController.pageSize + appDirectoryController.visibleEntries
             return `Showing ${from}-${to} of ${total_entries} entries`
         }
-        textSize: 12
-        textColor: appTheme.darkTextColor
+        textSize: 11
+        textColor: "#888888"
     }
 
     Item { Layout.fillWidth: true }
@@ -39,18 +39,20 @@ RowLayout {
 
             Components.InfoText {
                 text: "Page "
-                textSize: 12
-                textColor: appTheme.darkTextColor
+                textSize: 11
+                textColor: "#888888"
                 anchors.verticalCenter: parent.verticalCenter
             }
 
             TextField {
                 id: pageInput
                 width: Math.max(30, contentWidth + 20)
-                height: 24
+                height: 20
                 
                 leftPadding: 5
                 rightPadding: 5
+                topPadding: 0
+                bottomPadding: 0
                 anchors.verticalCenter: parent.verticalCenter
                 
                 // > restricts input strictly to numbers between 1 and totalPages
@@ -62,9 +64,9 @@ RowLayout {
                 text: (appDirectoryController.pageIndex + 1).toString()
                 maximumLength: appDirectoryController.totalPages.toString().length
                 
-                font.pixelSize: 12
+                font.pixelSize: 11
                 font.family: appTheme.rethinkSansFontName
-                color: appTheme.darkTextColor
+                color: "#888888"
                 horizontalAlignment: TextInput.AlignHCenter
 
                 property bool isInputValid: {
@@ -103,17 +105,27 @@ RowLayout {
 
             Components.InfoText {
                 text: " / " + appDirectoryController.totalPages
-                textSize: 12
-                textColor: appTheme.darkTextColor
+                textSize: 11
+                textColor: "#888888"
                 anchors.verticalCenter: parent.verticalCenter
             }
         }
         
-        Item { width: 10; height: 1 }
+        Item { width: 5; height: 1 }
+
+        Rectangle {
+            width: 1.5
+            height: 15
+            radius: 1
+            color: "#bbbbbb"
+            anchors.verticalCenter: parent.verticalCenter
+        }
+
+        Item { width: 5; height: 1 }
 
         // first page button
         Components.ActionButton {
-            text: "<< "
+            text: "◀◀ "
             textColor: "white"
             buttonColor: enabled ? appTheme.activeButtonBgColor : "#bbbbbb"
             width: 20
@@ -125,7 +137,7 @@ RowLayout {
 
         // prev button
         Components.ActionButton {
-            text: "< "
+            text: "◀ "
             textColor: "white"
             buttonColor: enabled ? appTheme.activeButtonBgColor : "#bbbbbb"
             width: 20
@@ -137,7 +149,7 @@ RowLayout {
 
         // next button
         Components.ActionButton {
-            text: "> "
+            text: "▶ "
             textColor: "white"
             buttonColor: enabled ? appTheme.activeButtonBgColor : "#bbbbbb"
             width: 20
@@ -149,7 +161,7 @@ RowLayout {
 
         // last page button
         Components.ActionButton {
-            text: ">> "
+            text: "▶▶ "
             textColor: "white"
             buttonColor: enabled ? appTheme.activeButtonBgColor : "#bbbbbb"
             width: 20

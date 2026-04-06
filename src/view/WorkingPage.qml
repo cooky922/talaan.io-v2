@@ -256,13 +256,20 @@ Rectangle {
 
                     ColumnLayout {
                         anchors.fill: parent
-                        anchors.margins: 20
+                        anchors.leftMargin: 20
+                        anchors.rightMargin: 20
+                        anchors.topMargin: 10
+                        anchors.bottomMargin: 10
                         spacing: 15
 
                         // Pagination is now properly sitting above the table
                         WorkingUI.PaginationArea {
                             Layout.fillWidth: true
                             Layout.alignment: Qt.AlignTop
+                            Layout.leftMargin: 7
+                            Layout.rightMargin: 7
+                            Layout.topMargin: 5
+                            Layout.bottomMargin: 0
                         }
 
                         WorkingUI.DirectoryArea {

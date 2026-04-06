@@ -51,7 +51,8 @@ Rectangle {
                                 text: model.display.toUpperCase() || ""
                                 font.bold: true
                                 font.pixelSize: 11
-                                color: "#4B5563"
+                                font.family: appTheme.rethinkSansFontName
+                                color: "#59634b"
                                 verticalAlignment: Text.AlignLeft
                             }
 
@@ -62,8 +63,8 @@ Rectangle {
 
                                 Text {
                                     text: "▲"
-                                    color: "#6B7280"
-                                    font.pixelSize: 8
+                                    color: "#59634b"
+                                    font.pixelSize: 9
 
                                     visible: appDirectoryController.sortFieldIndex === index
                                     opacity: appDirectoryController.sortAscending ? 1 : 0
@@ -71,8 +72,8 @@ Rectangle {
 
                                 Text {
                                     text: "▼"
-                                    color: "#6B7280"
-                                    font.pixelSize: 8
+                                    color: "#59634b"
+                                    font.pixelSize: 9
 
                                     visible: appDirectoryController.sortFieldIndex === index
                                     opacity: appDirectoryController.sortAscending ? 0 : 1
@@ -227,14 +228,6 @@ Rectangle {
                     }
                 }
             }
-        }
-
-        // bottom border
-        Rectangle {
-            Layout.fillWidth: true
-            Layout.alignment: Qt.AlignBottom
-            height: 1
-            color: "#D1D5DB"
         }
     }
 }
