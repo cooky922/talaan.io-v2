@@ -7,8 +7,8 @@ ApplicationWindow {
     id: app
     width: 800
     minimumWidth: 800
-    height: 450
-    minimumHeight: 450
+    height: 500
+    minimumHeight: 500
 
     visible: true
     title: "talaan.io - Simple Student Information System"

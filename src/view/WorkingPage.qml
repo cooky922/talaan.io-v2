@@ -23,7 +23,8 @@ Rectangle {
     property string pendingAction: ""
     property var pendingOldData: null
     property var pendingNewData: null
-    property string currentSection: "directory" // options: "dashboard", "directory", "history"
+    // options: "dashboard", "directory", "history", "settings"
+    property string currentSection: "directory"
     
     // > sidebar state
     property bool isSidebarCollapsed: false
@@ -142,6 +143,14 @@ Rectangle {
                         Components.TitleText { 
                             visible: workingPage.currentSection === "history"
                             text: "History"
+                            textSize: 28 
+                            Layout.alignment: Qt.AlignLeft | Qt.AlignVCenter
+                        }
+
+                        // Show Settings Title
+                        Components.TitleText { 
+                            visible: workingPage.currentSection === "settings"
+                            text: "Settings"
                             textSize: 28 
                             Layout.alignment: Qt.AlignLeft | Qt.AlignVCenter
                         }
@@ -282,6 +291,20 @@ Rectangle {
                         }
                     }
 
+                    // > settings toggle
+                    Components.ToggleButton {
+                        Layout.alignment: Qt.AlignHCenter
+                        text: "Settings"
+                        iconSource: "../../../assets/images/icons/settings-dark.svg"
+                        isActive: workingPage.currentSection === "settings"
+                        onClicked: {
+                            searchBar.clearSearchText()
+                            appDirectoryController.resetStates() 
+                            workingPage.currentSection = "settings"
+                            workingPage.isEditMode = false
+                        }
+                    }
+
                     Item { Layout.fillHeight: true }
                 }
             }
@@ -394,6 +417,35 @@ Rectangle {
                     Components.InfoText { 
                         text: "History content goes here..."
                         textColor: "black"
+                    }
+
+                    Item { Layout.fillHeight: true; Layout.fillWidth: true }                
+                }
+
+                // => settings section
+                ColumnLayout {
+                    anchors.fill: parent
+                    anchors.leftMargin: 20
+                    anchors.rightMargin: 20
+                    anchors.topMargin: 0
+                    anchors.bottomMargin: 20
+                    spacing: 10
+                    visible: workingPage.currentSection === "settings"
+
+                    Components.Card {
+                        Layout.fillWidth: true
+                        Layout.preferredHeight: 200
+                        
+                        RowLayout {
+                            anchors.top: parent.top
+                            anchors.horizontalCenter: parent.horizontalCenter
+                            anchors.margins: 10
+
+                            Components.InfoText { 
+                                text: "Settings goes here..."
+                                textColor: "black"
+                            }
+                        }
                     }
 
                     Item { Layout.fillHeight: true; Layout.fillWidth: true }                

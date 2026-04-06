@@ -137,11 +137,13 @@ Button {
         }
 
         // > menu items
+        /*
         CustomMenuItem {
             text: "Settings"
             iconSrc: "../../../../assets/images/icons/settings-dark.svg"
             onTriggered: accountArea.settingsRequested()
         }
+        */
 
         CustomMenuItem {
             text: "About"
