@@ -89,7 +89,7 @@ Rectangle {
                 Components.ToggleButton {
                     Layout.alignment: Qt.AlignHCenter
                     text: "Dashboard"
-                    iconSource: "../../../assets/images/icons/home-dark.svg"
+                    iconSource: "../../../assets/images/icons/dashboard-dark.svg"
                     isActive: workingPage.currentSection === "dashboard"
                     onClicked: {
                         searchBar.clearSearchText()
