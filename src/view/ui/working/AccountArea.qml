@@ -25,9 +25,9 @@ Button {
         color: {
             if (accountArea.down) return Qt.rgba(0, 0, 0, 0.25)
             if (accountArea.hovered) return Qt.rgba(0, 0, 0, 0.2)
-            return Qt.rgba(0, 0, 0, 0.15)
+            return Qt.rgba(255, 255, 255, 0.15)
         }
-        border.color: Qt.rgba(0, 0, 0, 0.3)
+        border.color: Qt.rgba(0, 0, 0, 0.25)
         border.width: 1
         radius: accountArea.height / 2
     }

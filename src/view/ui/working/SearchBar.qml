@@ -7,10 +7,10 @@ import "../../components" as Components
 Rectangle {
     id: root
     
-    color: Qt.rgba(0, 0, 0, 0.15)
+    color: Qt.rgba(255, 255, 255, 0.15)
     radius: root.height / 2
     border.width: 1
-    border.color: Qt.rgba(0, 0, 0, 0.3)
+    border.color: Qt.rgba(0, 0, 0, 0.25)
     clip: true
 
     function clearSearchText(removeFocus = true) {
