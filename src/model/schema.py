@@ -64,7 +64,7 @@ class StudentEntry:
     
     @staticmethod
     def validate_field(field : FieldKind, input : str | int, parent_directory = None):
-        if field not in [StudentEntry.FieldKind.YEAR, StudentEntry.FieldKind.PROGRAM_CODE] and len(input) == 0:
+        if field not in [StudentEntry.FieldKind.YEAR, StudentEntry.FieldKind.PROGRAM_CODE] and (len(input) == 0 or input == "-"):
             raise ValidationError(DirectoryKind.STUDENT, field,
                                   ValidationErrorKind.MISSING_FIELD,
                                   'This field cannot be empty')
@@ -81,7 +81,7 @@ class StudentEntry:
                         raise ValidationError(DirectoryKind.STUDENT,
                                               StudentEntry.FieldKind.ID,
                                               ValidationErrorKind.INVALID_FORMAT,
-                                              'ID Number must be in format 20XX-XXXX')
+                                              'ID Number must be in format 20YY-NNNN')
                     if not part.isdigit():
                         raise ValidationError(DirectoryKind.STUDENT,
                                               StudentEntry.FieldKind.ID,

@@ -10,7 +10,7 @@ Window {
     modality: Qt.ApplicationModal
     flags: Qt.Dialog | Qt.CustomizeWindowHint | Qt.WindowTitleHint | Qt.WindowCloseButtonHint
 
-    width: 400
+    width: 400 
     minimumWidth: width
     maximumWidth: width
 
@@ -28,13 +28,14 @@ Window {
         return `Edit ${appDirectoryController.currentDirectoryName}`
     }
 
+    // > signals
     signal requestAdd(var newData)
     signal requestUpdate(var oldData, var newData)
     signal requestDelete(var oldData)
 
     // > state variables
     property string mode: "info" 
-    property var initialData: ({}) // only used when mode == "edit"
+    property var initialData: ({})
     property var currentData: ({})
     property bool isFormValid: false
     property var formErrors: ({})
@@ -49,7 +50,7 @@ Window {
 
     function openForAdd() {
         mode = "add"
-        currentData = appDirectoryController.currentDirectoryName === "Student" ? ({'year' : 1}) : ({})
+        currentData = appDirectoryController.currentDirectoryName === "Student" ? {'year' : 1} : ({})
         initialData = ({})
         formErrors = ({})
         touchedFields = ({})
@@ -86,18 +87,19 @@ Window {
     
     function updateField(key, value) {
         let directoryName = appDirectoryController.currentDirectoryName
-        if (value === "None" && ((directoryName === "Student" && key === "program_code") ||
+        if (value === "None" && ((directoryName === "Student" && key === "program_code") || 
                                  (directoryName === "Program" && key === "college_code")))
             value = ""
+            
         let temp = Object.assign({}, root.currentData)
         temp[key] = value
         root.currentData = temp
+        
         if (!root.touchedFields[key]) {
-            let temp = Object.assign({}, root.touchedFields)
-            temp[key] = true
-            root.touchedFields = temp
+            let tFields = Object.assign({}, root.touchedFields)
+            tFields[key] = true
+            root.touchedFields = tFields
         }
-
         triggerValidation() 
     }
 
@@ -115,8 +117,7 @@ Window {
             visible: mode === "info"
             text: "Basic Information"
             textSize: 14
-            textColor: "#111827"
-
+            textColor: appTheme.darkTextColor
             font.bold: true
         }
 
@@ -131,8 +132,8 @@ Window {
             Flow {
                 id: contentFlow
                 width: parent.width
-                spacing: 8
-                property int rowSpacing: 10
+                spacing: 8 
+                property int rowSpacing: 10 
 
                 Repeater {
                     model: appDirectoryController.currentDirectorySchema
@@ -145,57 +146,52 @@ Window {
                         property bool isLockedEdit: root.mode === "edit" && fieldKey === "id"
                         property bool isComboField: {
                             let directoryName = appDirectoryController.currentDirectoryName
-                            if (directoryName === "Student")
+                            if (directoryName === "Student") 
                                 return fieldKey === "gender" || fieldKey === "program_code"
-                            else if (directoryName === "Program")
+                            else if (directoryName === "Program") 
                                 return fieldKey === "college_code"
                             else 
                                 return false
                         }
+                        
                         width: {
                             let halfWidthFields = ["first_name", "last_name", "year", "gender"]
                             return halfWidthFields.includes(fieldKey) ? (parent.width - parent.spacing) / 2 : parent.width
                         }
                         bottomPadding: parent.rowSpacing
-                        spacing: 2 // > reduced gap between label and field
+                        spacing: 2
 
                         // == Field Label
                         Components.InfoText {
                             text: modelData.display_name
                             textSize: 11
-                            textColor: "#555555" 
+                            textColor: "#666666" 
                             font.bold: true
                         }
 
-                        // = @ Information Widget
+                        // = [1] Information Widget (Read-Only)
                         Rectangle {
                             visible: root.mode === "info"
                             id: infoWidget
                             width: parent.width
                             height: Math.max(32, infoTextContent.implicitHeight + 16)
                             radius: 8
-                            border.color: "#D1D5DB"
                             color: mouseArea.containsMouse ? "#EEEEEE" : "transparent"
+                            border.color: "#CCCCCC"
+                            border.width: 1
 
                             Components.InfoText {
                                 id: infoTextContent
-                                anchors.left: parent.left
-                                anchors.right: parent.right
-                                anchors.verticalCenter: parent.verticalCenter
-                                anchors.margins: 8
-                                leftPadding: 5
-
+                                anchors.fill: parent
+                                anchors.margins: 10
                                 text: root.currentData[fieldKey] || "None"
                                 font.pixelSize: 12 
                                 color: {
                                     let textValue = root.currentData[fieldKey]
-                                    if (textValue === undefined ||
-                                        textValue === null || 
-                                        textValue === "")
-                                        return "#808080"
-                                    return "#333333"
+                                    if (textValue === undefined || textValue === null || textValue === "") 
+                                        return "#888888"
+                                    return appTheme.darkTextColor
                                 }
-
                                 wrapMode: Text.Wrap
                             }
 
@@ -206,58 +202,42 @@ Window {
                             }
                         }
 
-                        // = @ Editable combobox
+                        // = [2] Editable Combobox
                         ComboBox {
                             visible: root.mode !== "info" && isComboField
                             id: comboControl
                             model: modelData.options
                             width: parent.width
-                            height: 32 
-                            
+                            height: 32
                             editable: true
                             
-                            onActivated: {
-                                updateField(fieldKey, currentValue)
-                            }
+                            onActivated: { updateField(fieldKey, currentValue) }
                             
                             contentItem: TextField {
                                 text: root.currentData[fieldKey] || ""
                                 font.pixelSize: 12
-                                color: "#333333"
+                                color: appTheme.darkTextColor
                                 verticalAlignment: Text.AlignVCenter
                                 leftPadding: 10
-                                rightPadding: 20
-
-                                // placeholder text
-                                Text {
-                                    text: "Select " + modelData.display_name.toLowerCase()
-                                    color: "#bbbbbb"
-                                    font.pixelSize: 12
-                                    anchors.left: parent.left
-                                    anchors.verticalCenter: parent.verticalCenter
-                                    anchors.leftMargin: 10
-                                    
-                                    visible: parent.text === "" 
-                                }
+                                rightPadding: 24
                                 
+                                placeholderText: "Select " + modelData.display_name.toLowerCase()
+                                placeholderTextColor: "#6B7280" // > Darker placeholder text
                                 background: Item {}
-
                                 selectByMouse: true
 
-                                onReleased: (event) => {
-                                    if (!comboControl.popup.visible)
-                                        comboControl.popup.open()
+                                onReleased: (event) => { 
+                                    if (!comboControl.popup.visible) 
+                                        comboControl.popup.open() 
                                 }
-
                                 onTextEdited: {
                                     updateField(fieldKey, text)
-                                    if (!comboControl.popup.visible)
+                                    if (!comboControl.popup.visible) 
                                         comboControl.popup.open()
                                 }
-
-                                onActiveFocusChanged: {
-                                    if (!activeFocus)
-                                        root.markAsTouched(fieldKey)
+                                onActiveFocusChanged: { 
+                                    if (!activeFocus) 
+                                        root.markAsTouched(fieldKey) 
                                 }
                             }
                             
@@ -273,7 +253,7 @@ Window {
                             }
                             
                             background: Rectangle {
-                                radius: 8 
+                                radius: 8
                                 border.color: {
                                     if (hasError)
                                         return appTheme.errorColor
@@ -286,15 +266,7 @@ Window {
                             }
                             
                             popup: Popup {
-                                y: {
-                                    if (!comboControl || !comboControl.parent) 
-                                        return comboControl.height + 4;
-                                    let absoluteY = comboControl.mapToItem(null, 0, 0).y
-                                    let spaceBelow = root.height - (absoluteY + comboControl.height)
-                                    if (spaceBelow < implicitHeight)
-                                        return -implicitHeight - 4
-                                    return comboControl.height + 4
-                                }
+                                y: comboControl.height + 4
                                 width: comboControl.width
                                 implicitHeight: Math.min(180, contentItem.implicitHeight + (padding * 2))
                                 padding: 4
@@ -309,40 +281,42 @@ Window {
 
                                 background: Rectangle {
                                     color: "white"
-                                    border.color: "#D1D5DB"
+                                    border.color: "#CCCCCC"
                                     border.width: 1
-                                    radius: 12
+                                    radius: 8
                                     layer.enabled: true
-                                    layer.effect: MultiEffect {
-                                        shadowEnabled: true; shadowBlur: 15
-                                        shadowOpacity: 0.1; shadowVerticalOffset: 4
+                                    layer.effect: MultiEffect { 
+                                        shadowEnabled: true
+                                        shadowBlur: 10
+                                        shadowOpacity: 0.1
+                                        shadowVerticalOffset: 2 
                                     }
                                 }
                             }
 
                             delegate: ItemDelegate {
                                 width: comboControl.popup.width - (comboControl.popup.padding * 2)
-                                height: 28
-                                leftPadding: 12; rightPadding: 12
-                                
+                                height: 30
+                                leftPadding: 10; rightPadding: 10
                                 hoverEnabled: true
                                 HoverHandler { cursorShape: Qt.PointingHandCursor }
 
                                 contentItem: Text {
                                     text: modelData
-                                    color: "#374151"
+                                    color: parent.hovered ? appTheme.activeButtonBgColor : appTheme.darkTextColor
                                     font.pixelSize: 12
+                                    font.bold: index === comboControl.currentIndex
                                     verticalAlignment: Text.AlignVCenter
                                 }
 
                                 background: Rectangle {
-                                    radius: 9
-                                    color: parent.hovered ? "#f0f4e6" : "white" 
+                                    radius: 8
+                                    color: parent.hovered ? "#EEEEEE" : "transparent" 
                                 }
                             }
                         }
 
-                        // = @ Spinbox Widget (for Year)
+                        // = [3] Spinbox Widget (for Year)
                         SpinBox {
                             visible: root.mode !== "info" && fieldKey === "year"
                             id: yearControl
@@ -354,11 +328,7 @@ Window {
                             editable: false
                             
                             onValueModified: { updateField(fieldKey, value) }
-
-                            onActiveFocusChanged: {
-                                if (!activeFocus) 
-                                    root.markAsTouched(fieldKey)
-                            }
+                            onActiveFocusChanged: { if (!activeFocus) root.markAsTouched(fieldKey) }
 
                             background: Rectangle {
                                 radius: 8
@@ -373,16 +343,15 @@ Window {
                                 color: yearControl.hovered ? "#EEEEEE" : "transparent"
                             }
 
-                            leftPadding: 10
-                            rightPadding: 26
+                            leftPadding: 10; rightPadding: 26
 
                             contentItem: TextInput {
                                 z: 2
                                 text: yearControl.value
                                 font.pixelSize: 12
-                                color: "#333333"
+                                color: appTheme.darkTextColor
                                 selectionColor: appTheme.activeButtonBgColor
-                                selectedTextColor: "#ffffff"
+                                selectedTextColor: "white"
                                 horizontalAlignment: Qt.AlignLeft
                                 verticalAlignment: Qt.AlignVCenter
                                 readOnly: true
@@ -390,102 +359,186 @@ Window {
 
                             up.indicator: Rectangle {
                                 visible: yearControl.value < yearControl.to
-                                x: yearControl.width - width - 4
-                                y: (yearControl.height - 26) / 2
-                                width: 20
-                                height: 13
-                                radius: 2
-                                
-                                color: yearControl.up.pressed ? appTheme.mainBgColor : (yearControl.up.hovered ? "#EEEEEE" : "transparent")
+                                x: yearControl.width - width - 6
+                                y: (yearControl.height - 24) / 2
+                                width: 20; height: 12
+                                radius: 4
+                                color: yearControl.up.pressed ? "#D1D5DB" : (yearControl.up.hovered ? "#E5E7EB" : "transparent")
 
                                 Text {
                                     text: "+"
-                                    font.pixelSize: 13
+                                    font.pixelSize: 12
                                     font.bold: true
-                                    color: yearControl.up.hovered ? appTheme.activeButtonBgColor : "#888888"
+                                    color: yearControl.up.hovered ? appTheme.activeButtonBgColor : "#9CA3AF"
                                     anchors.centerIn: parent
                                     anchors.verticalCenterOffset: -1
                                 }
-
                                 HoverHandler { cursorShape: Qt.PointingHandCursor }
                             }
 
                             down.indicator: Rectangle {
                                 visible: yearControl.value > yearControl.from
-                                x: yearControl.width - width - 4
-                                y: ((yearControl.height - 26) / 2) + 13
-                                width: 20
-                                height: 13
-                                radius: 2
-                                
-                                color: yearControl.down.pressed ? appTheme.mainBgColor : (yearControl.down.hovered ? "#EEEEEE" : "transparent")
+                                x: yearControl.width - width - 6
+                                y: ((yearControl.height - 24) / 2) + 12
+                                width: 20; height: 12
+                                radius: 4
+                                color: yearControl.down.pressed ? "#D1D5DB" : (yearControl.down.hovered ? "#E5E7EB" : "transparent")
 
                                 Text {
                                     text: "-"
-                                    font.pixelSize: 13
+                                    font.pixelSize: 12
                                     font.bold: true
-                                    color: yearControl.down.hovered ? appTheme.activeButtonBgColor : "#888888"
+                                    color: yearControl.down.hovered ? appTheme.activeButtonBgColor : "#9CA3AF"
                                     anchors.centerIn: parent
                                     anchors.verticalCenterOffset: -1
                                 }
-
                                 HoverHandler { cursorShape: Qt.PointingHandCursor }
                             }
                         }
 
-                        // = @ Text Input Widget
+                        // = [4] Split Student ID Widget (ADD Mode Only)
+                        RowLayout {
+                            id: splitIdRow
+                            visible: root.mode === "add" && fieldKey === "id" && appDirectoryController.currentDirectoryName === "Student"
+                            width: parent.width
+                            height: 32
+                            spacing: 6
+
+                            function updateSplitId() {
+                                updateField(fieldKey, idYearInput.text + "-" + idSuffixInput.text)
+                            }
+
+                            TextField {
+                                id: idYearInput
+                                Layout.preferredWidth: 135
+                                Layout.fillHeight: true
+                                text: String(root.currentData[fieldKey] || "").split("-")[0] || ""
+                                placeholderText: "YYYY"
+                                placeholderTextColor: "#6B7280" // > Darker placeholder
+                                font.pixelSize: 12
+                                color: appTheme.darkTextColor
+                                leftPadding: 10
+                                background: Rectangle {
+                                    color: parent.hovered ? "#EEEEEE" : "transparent"
+                                    radius: 8
+                                    border.color: {
+                                        if (hasError)
+                                            return appTheme.errorColor
+                                        else if (idYearInput.activeFocus)
+                                            return appTheme.activeButtonBgColor
+                                        else
+                                            return "#CCCCCC"
+                                    }
+                                }
+                                onTextEdited: splitIdRow.updateSplitId()
+                                onActiveFocusChanged: { 
+                                    if (!activeFocus) 
+                                        root.markAsTouched(fieldKey) 
+                                }
+                            }
+
+                            Text {
+                                text: "—"
+                                font.bold: true
+                                font.pixelSize: 12
+                                color: "#6B7280"
+                            }
+
+                            TextField {
+                                id: idSuffixInput
+                                Layout.fillWidth: true
+                                Layout.fillHeight: true
+                                text: String(root.currentData[fieldKey] || "").split("-")[1] || ""
+                                placeholderText: "NNNN"
+                                placeholderTextColor: "#6B7280" // > Darker placeholder
+                                font.pixelSize: 12
+                                color: appTheme.darkTextColor
+                                leftPadding: 10
+                                background: Rectangle {
+                                    color: parent.hovered ? "#EEEEEE" : "transparent"
+                                    radius: 8
+                                    border.color: {
+                                        if (hasError)
+                                            return appTheme.errorColor
+                                        else if (parent.activeFocus)
+                                            return appTheme.activeButtonBgColor
+                                        else
+                                            return "#CCCCCC"
+                                    }
+                                }
+                                onTextEdited: splitIdRow.updateSplitId() // > Calls via ID to prevent errors
+                                onActiveFocusChanged: { if (!activeFocus) root.markAsTouched(fieldKey) }
+                            }
+
+                            // > Generate Random ID Button
+                            Rectangle {
+                                Layout.preferredWidth: 46
+                                Layout.fillHeight: true
+                                radius: 8
+                                border.color: "#D1D5DB"
+                                color: autoHover.hovered ? "#E5E7EB" : "#F3F4F6"
+                                
+                                Components.InfoText {
+                                    anchors.centerIn: parent
+                                    text: "Auto"
+                                    textSize: 12
+                                    font.bold: true
+                                    textColor: appTheme.darkTextColor
+                                }
+                                
+                                HoverHandler { id: autoHover; cursorShape: Qt.PointingHandCursor }
+                                MouseArea {
+                                    anchors.fill: parent
+                                    cursorShape: Qt.PointingHandCursor
+                                    onClicked: {
+                                        let year = new Date().getFullYear().toString()
+                                        let suffix = Math.floor(1000 + Math.random() * 9000).toString()
+                                        updateField(fieldKey, year + "-" + suffix)
+                                    }
+                                }
+                            }
+                        }
+
+                        // = [5] Text Input Widget (Default)
                         TextField {
-                            visible: root.mode !== "info" && !isComboField && fieldKey !== "year"
+                            visible: root.mode !== "info" && !isComboField && fieldKey !== "year" && !(root.mode === "add" && fieldKey === "id" && appDirectoryController.currentDirectoryName === "Student")
                             width: parent.width
                             height: 32
                             text: root.currentData[fieldKey] || ""
-                            
                             enabled: !isLockedEdit
-
-                            // placeholder text
-                            Text {
-                                visible: parent.text === "" && !isLockedEdit
-                                text: "Enter " + modelData.display_name.toLowerCase()
-                                color: "#bbbbbb"
-                                font.pixelSize: 12
-                                anchors.left: parent.left
-                                anchors.verticalCenter: parent.verticalCenter
-                                anchors.leftMargin: 10
-                            }
+                            
+                            placeholderText: "Enter " + modelData.display_name.toLowerCase()
+                            placeholderTextColor: "#6B7280" // > Darker placeholder
                             
                             background: Rectangle {
                                 color: isLockedEdit || parent.hovered ? "#EEEEEE" : "transparent"
                                 radius: 8
                                 border.color: {
-                                    if (isLockedEdit)
-                                        return "#CCCCCC"
-                                    else if (hasError)
-                                        return appTheme.errorColor
-                                    else if (parent.activeFocus)
-                                        return appTheme.activeButtonBgColor
-                                    else
-                                        return "#CCCCCC"
+                                    if (isLockedEdit) return "#CCCCCC"
+                                    else if (hasError) return appTheme.errorColor
+                                    else if (parent.activeFocus) return appTheme.activeButtonBgColor
+                                    else return "#CCCCCC"
                                 }
                             }
                             
-                            color: isLockedEdit ? "#aaaaaa" : "#333333"
+                            color: isLockedEdit ? "#9CA3AF" : appTheme.darkTextColor
                             font.pixelSize: 12
+                            leftPadding: 10
 
-                            onActiveFocusChanged: {
-                                if (!activeFocus) root.markAsTouched(fieldKey)
+                            onActiveFocusChanged: { 
+                                if (!activeFocus) 
+                                    root.markAsTouched(fieldKey) 
                             }
-                            
                             onTextEdited: { updateField(fieldKey, text) }
                         }
 
-                        // == Field Error Label
                         Text {
                             text: root.formErrors[fieldKey] || ""
                             visible: hasError
                             color: appTheme.errorColor
-                            font.pixelSize: 10
+                            font.pixelSize: 11
                             font.bold: true
-                            leftPadding: 2
+                            leftPadding: 4
                         }
                     }
                 }
@@ -496,6 +549,7 @@ Window {
         RowLayout {
             Layout.fillWidth: true
             spacing: 8
+            Layout.topMargin: 8
 
             Components.ActionButton {
                 visible: root.mode === "edit"
@@ -504,11 +558,37 @@ Window {
                 textSize: 12
                 buttonColor: appTheme.logoutButtonBgColor
                 iconSource: "../../../assets/images/icons/delete-light.svg"
-                onClicked: {
-                    root.requestDelete(root.initialData)
-                }
+                onClicked: { root.requestDelete(root.initialData) }
+                Layout.preferredHeight: 32
+            }
 
-                Layout.preferredHeight: 30
+            // > Reset Button
+            Components.ActionButton {
+                visible: root.mode !== "info"
+                text: "Reset"
+                textSize: 12
+                buttonColor: enabled ? "#F3F4F6" : "#E5E7EB" 
+                textColor: enabled ? "#333333" : "#9CA3AF"
+                bordered: true
+                enabled: {
+                    if (root.mode === "edit")
+                        return !appDirectoryController.areRecordsEqual(root.initialData, root.currentData)
+                    else if (appDirectoryController.currentDirectoryName === "Student" && root.mode === "add")
+                        return root.currentData && (Object.keys(root.currentData).length > 1 || parseInt(root.currentData.year) !== 1)
+                    else
+                        return root.currentData && Object.keys(root.currentData).length > 0  
+                }
+                onClicked: {
+                    if (root.mode === "add") {
+                        root.currentData = appDirectoryController.currentDirectoryName === "Student" ? {"year" : 1} : ({})
+                    } else if (root.mode === "edit") {
+                        root.currentData = Object.assign({}, root.initialData)
+                    }
+                    root.formErrors = ({})
+                    root.touchedFields = ({})
+                    root.triggerValidation()
+                }
+                Layout.preferredHeight: 32
             }
 
             Item { Layout.fillWidth: true }
@@ -518,11 +598,10 @@ Window {
                 text: "Cancel"
                 textColor: "#333333"
                 textSize: 12
-                buttonColor: "#f0f0f0"
+                buttonColor: "#F3F4F6"
                 onClicked: root.hide() 
                 bordered: true
-
-                Layout.preferredHeight: 30
+                Layout.preferredHeight: 32
             }
             
             Components.ActionButton {
@@ -530,21 +609,17 @@ Window {
                 enabled: {
                     if (root.mode === "edit")
                         return root.isFormValid && !appDirectoryController.areRecordsEqual(root.initialData, root.currentData)
-                    else
-                        return root.isFormValid
+                    else return root.isFormValid
                 }
                 text: root.mode === "edit" ? "Save Changes" : "Add Record"
-                textColor: enabled ? "white" : "#aaaaaa"
+                textColor: enabled ? "white" : "#9CA3AF"
                 textSize: 12
-                buttonColor: enabled ? appTheme.activeButtonBgColor : "#f0f0f0" 
-
-                Layout.preferredHeight: 30
+                buttonColor: enabled ? appTheme.activeButtonBgColor : "#E5E7EB" 
+                Layout.preferredHeight: 32
                 
                 onClicked: {
-                    if (root.mode === "edit")
-                        root.requestUpdate(root.initialData, root.currentData)
-                    else
-                        root.requestAdd(root.currentData)
+                    if (root.mode === "edit") root.requestUpdate(root.initialData, root.currentData)
+                    else root.requestAdd(root.currentData)
                 }
             }
         }
