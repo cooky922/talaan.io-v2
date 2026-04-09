@@ -9,6 +9,7 @@ from PyQt6.QtWidgets import QApplication
 
 from src.controller.directory_controller import QMLDirectoryController
 from src.controller.dashboard_controller import QMLDashboardController
+from src.controller.settings_controller import QMLSettingsController
 from src.database.database import SQLDatabase
 from src.model.table_model import DirectoryTableModel
 from src.view.theme import FontLoader, QMLAppTheme
@@ -35,6 +36,10 @@ class App(QApplication):
 
         super().__init__([])
 
+        # Setup app identity for QSettings
+        self.setOrganizationName('ccc151')
+        self.setApplicationName('talaan_io')
+
         # "Bare metal" Windows Initialization
         os.environ['QT_QUICK_CONTROLS_STYLE'] = 'Basic'
         ctypes.windll.shell32.SetCurrentProcessExplicitAppUserModelID(App.windows_app_id)
@@ -54,10 +59,18 @@ class App(QApplication):
         self.appTheme = QMLAppTheme(self)
         self.appDirectoryModel = DirectoryTableModel()
         self.appDirectoryController = QMLDirectoryController(self.appDirectoryModel, self)
-        self.appDirectoryController.refresh_table()
+        self.appDirectoryController.refreshTable()
 
         self.appDashboardController = QMLDashboardController(self)
         self.appDashboardController.refreshData()
+
+        self.appSettingsController = QMLSettingsController(self)
+
+        self.appDirectoryController.setPageSize(self.appSettingsController.pageSize)
+        self.appTheme.setThemeColor(self.appSettingsController.themeColorIndex)
+
+        self.appSettingsController.themeColorIndexChanged.connect(self.appTheme.setThemeColor)
+        self.appSettingsController.pageSizeChanged.connect(self.appDirectoryController.setPageSize)
 
         # Prepare QML context properties and load file
         context = self.engine.rootContext()
@@ -66,6 +79,7 @@ class App(QApplication):
         context.setContextProperty('appDirectoryModel', self.appDirectoryModel)
         context.setContextProperty('appDirectoryController', self.appDirectoryController)
         context.setContextProperty('appDashboardController', self.appDashboardController)
+        context.setContextProperty('appSettingsController', self.appSettingsController)
         self.engine.load(QUrl.fromLocalFile(App.app_qml_file_path))
 
         # Return early if invalid (e.g. QML errors)

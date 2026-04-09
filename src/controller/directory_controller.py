@@ -28,7 +28,7 @@ class QMLDirectoryController(QObject):
         self._total_entries = 0
 
         self._filter_options = None
-        self.reset_filter_options()
+        self.resetFilterOptions()
 
         self._sort_field_index = 0
         self._sort_ascending = True
@@ -113,13 +113,13 @@ class QMLDirectoryController(QObject):
                 case 'Program': self.dir_kind = DirectoryKind.PROGRAM
                 case 'College': self.dir_kind = DirectoryKind.COLLEGE
             self._page_index = 0
-            self.reset_filter_options()
+            self.resetFilterOptions()
             self._search_filter_index = 0
             self._sort_field_index = 0
             self._sort_ascending = True
             self.sortStateChanged.emit()
             self.directoryChanged.emit()
-            self.refresh_table()
+            self.refreshTable()
 
     @pyqtSlot(str)
     def updateSearch(self, text):
@@ -129,7 +129,7 @@ class QMLDirectoryController(QObject):
             
             self.searchChanged.emit()
             self.paginationChanged.emit() 
-            self.refresh_table()
+            self.refreshTable()
 
     @pyqtSlot(int)
     def setSearchFilterIndex(self, index):
@@ -138,7 +138,7 @@ class QMLDirectoryController(QObject):
             if self._search_text.strip() != '':
                 self._page_index = 0
                 self.searchChanged.emit()
-                self.refresh_table()
+                self.refreshTable()
 
     @pyqtSlot(int)
     def toggleSort(self, field_index):
@@ -150,38 +150,38 @@ class QMLDirectoryController(QObject):
         self._page_index = 0
         self.sortStateChanged.emit()
         self.paginationChanged.emit()
-        self.refresh_table()
+        self.refreshTable()
 
     @pyqtSlot()
     def nextPage(self):
         if self._page_index < (self.totalPages - 1):
             self._page_index += 1
-            self.refresh_table()
+            self.refreshTable()
 
     @pyqtSlot()
     def prevPage(self):
         if self._page_index > 0:
             self._page_index -= 1
-            self.refresh_table()
+            self.refreshTable()
 
     @pyqtSlot()
     def setFirstPage(self):
         if self._page_index > 0:
             self._page_index = 0
-            self.refresh_table()
+            self.refreshTable()
 
     @pyqtSlot()
     def setLastPage(self):
         if self._page_index < (self.totalPages - 1):
             self._page_index = self.totalPages - 1
-            self.refresh_table()
+            self.refreshTable()
 
     @pyqtSlot(int)
     def setPage(self, page_number):
         target_index = page_number - 1
         if 0 <= target_index < self.totalPages:
             self._page_index = target_index
-            self.refresh_table()
+            self.refreshTable()
 
     @pyqtSlot(int)
     def setPageSize(self, size):
@@ -189,7 +189,7 @@ class QMLDirectoryController(QObject):
             self._page_size = size
             self._page_index = 0
             self.paginationChanged.emit()
-            self.refresh_table()
+            self.refreshTable()
 
     @pyqtSlot()
     def resetStates(self):
@@ -200,11 +200,11 @@ class QMLDirectoryController(QObject):
         self._search_text = ""
         self._search_filter_index = 0
         self._filter_options = None
-        self.reset_filter_options()
+        self.resetFilterOptions()
         self.sortStateChanged.emit()
         self.directoryChanged.emit()
         self.searchChanged.emit()
-        self.refresh_table()
+        self.refreshTable()
 
     @pyqtSlot('QVariantMap', 'QVariantMap', result = bool)
     def areRecordsEqual(self, old_data, new_data):
@@ -255,7 +255,7 @@ class QMLDirectoryController(QObject):
         except Exception as e:
             return {'success': False, 'message': str(e)}
         finally:
-            self.refresh_table()
+            self.refreshTable()
 
     @pyqtSlot('QVariantMap', 'QVariantMap', result = 'QVariantMap')
     def updateRecord(self, old_data, new_data):
@@ -269,7 +269,7 @@ class QMLDirectoryController(QObject):
             print(f'Error updating record: {e}')
             return {'success': False, 'message': str(e)}
         finally:
-            self.refresh_table()
+            self.refreshTable()
 
     @pyqtSlot('QVariantMap', result = 'QVariantMap')
     def deleteRecord(self, old_data):
@@ -281,7 +281,7 @@ class QMLDirectoryController(QObject):
         except Exception as e:
             return {'success': False, 'message': str(e)}
         finally:
-            self.refresh_table()
+            self.refreshTable()
 
     # =========================================
     # CORE DATA LOGIC
@@ -300,7 +300,7 @@ class QMLDirectoryController(QObject):
                 new_data[col] = None
         return new_data
 
-    def reset_filter_options(self):
+    def resetFilterOptions(self):
         self._filter_options = ['All Fields'] + [
             self.dir_kind
                 .get_entry_type()
@@ -308,7 +308,7 @@ class QMLDirectoryController(QObject):
             for column in DIRECTORY_MAP[self.dir_kind].get_columns()
         ]
 
-    def refresh_table(self):
+    def refreshTable(self):
         # get columns
         columns = DIRECTORY_MAP[self.dir_kind].get_columns()
         
