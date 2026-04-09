@@ -5,21 +5,21 @@ import "../../components" as Components
 
 RowLayout {
     
-    // > displays the number of entries
+    // > displays the number of records
     Components.InfoText {
         text: {
-            let total_entries = appDirectoryController.totalEntries
-            if (total_entries <= appDirectoryController.pageSize) {
-                if (total_entries === 0) 
-                    return "Showing no entries"
-                else if (total_entries === 1)
-                    return "Showing one entry"
+            let total_item_count = appRecordsController.totalItemCount
+            if (total_item_count <= appRecordsController.pageSize) {
+                if (total_item_count === 0) 
+                    return "Showing zero items"
+                else if (total_item_count === 1)
+                    return "Showing one item"
                 else
-                    return `Showing all ${total_entries} entries`
+                    return `Showing all ${total_item_count} items`
             }
-            let from = appDirectoryController.pageIndex * appDirectoryController.pageSize + 1
-            let to = appDirectoryController.pageIndex * appDirectoryController.pageSize + appDirectoryController.visibleEntries
-            return `Showing ${from}-${to} of ${total_entries} entries`
+            let from = appRecordsController.pageIndex * appRecordsController.pageSize + 1
+            let to = appRecordsController.pageIndex * appRecordsController.pageSize + appRecordsController.visibleItemCount
+            return `Showing ${from}-${to} of ${total_item_count} items`
         }
         textSize: 11
         textColor: "#888888"
@@ -30,7 +30,7 @@ RowLayout {
     // main layout 
     Row {
         spacing: 5
-        visible: appDirectoryController.totalPages !== 1
+        visible: appRecordsController.totalPages !== 1
 
         // > displays the page status
         Row {
@@ -61,8 +61,8 @@ RowLayout {
                 }
 
                 // > keep text synced with the backend (if changed via next/prev buttons)
-                text: (appDirectoryController.pageIndex + 1).toString()
-                maximumLength: appDirectoryController.totalPages.toString().length
+                text: (appRecordsController.pageIndex + 1).toString()
+                maximumLength: appRecordsController.totalPages.toString().length
                 
                 font.pixelSize: 11
                 font.family: appTheme.rethinkSansFontName
@@ -71,7 +71,7 @@ RowLayout {
 
                 property bool isInputValid: {
                     let num = parseInt(text)
-                    return !isNaN(num) && num >= 1 && num <= appDirectoryController.totalPages
+                    return !isNaN(num) && num >= 1 && num <= appRecordsController.totalPages
                 }
 
                 background: Rectangle {
@@ -91,27 +91,27 @@ RowLayout {
                 // > change page when user hits Enter or clicks away
                 onEditingFinished: {
                     if (isInputValid) {
-                        appDirectoryController.setPage(parseInt(text))
+                        appRecordsController.setPage(parseInt(text))
                         focus = false
                     } else {
                         // > if they typed something invalid and clicked away, reset to the current page
-                        text = (appDirectoryController.pageIndex + 1).toString()
+                        text = (appRecordsController.pageIndex + 1).toString()
                         focus = false
                     }
                 }
 
                 Connections {
-                    target: appDirectoryController
+                    target: appRecordsController
                     function onPaginationChanged() {
                         if (!pageInput.activeFocus) {
-                            pageInput.text = (appDirectoryController.pageIndex + 1).toString()
+                            pageInput.text = (appRecordsController.pageIndex + 1).toString()
                         }
                     }
                 }
             }
 
             Components.InfoText {
-                text: " / " + appDirectoryController.totalPages
+                text: " / " + appRecordsController.totalPages
                 textSize: 11
                 textColor: "#888888"
                 anchors.verticalCenter: parent.verticalCenter
@@ -138,8 +138,8 @@ RowLayout {
             width: 20
             height: 20
             topPadding: 11
-            enabled: appDirectoryController.pageIndex > 0
-            onClicked: appDirectoryController.setFirstPage()
+            enabled: appRecordsController.pageIndex > 0
+            onClicked: appRecordsController.setFirstPage()
         }
 
         // prev button
@@ -150,8 +150,8 @@ RowLayout {
             width: 20
             height: 20
             topPadding: 11
-            enabled: appDirectoryController.pageIndex > 0
-            onClicked: appDirectoryController.prevPage()
+            enabled: appRecordsController.pageIndex > 0
+            onClicked: appRecordsController.prevPage()
         }
 
         // next button
@@ -162,8 +162,8 @@ RowLayout {
             width: 20
             height: 20
             topPadding: 11
-            enabled: appDirectoryController.pageIndex < (appDirectoryController.totalPages - 1)
-            onClicked: appDirectoryController.nextPage()
+            enabled: appRecordsController.pageIndex < (appRecordsController.totalPages - 1)
+            onClicked: appRecordsController.nextPage()
         }
 
         // last page button
@@ -174,8 +174,8 @@ RowLayout {
             width: 20
             height: 20
             topPadding: 11
-            enabled: appDirectoryController.pageIndex < (appDirectoryController.totalPages - 1)
-            onClicked: appDirectoryController.setLastPage()
+            enabled: appRecordsController.pageIndex < (appRecordsController.totalPages - 1)
+            onClicked: appRecordsController.setLastPage()
         }
     }
 }

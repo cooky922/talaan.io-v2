@@ -69,8 +69,8 @@ Components.Card {
         RowLayout {
             Layout.fillWidth: true
             
-            Components.InfoText { 
-                text: "Number of entries displayed per page"
+            Components.InfoText {
+                text: "Number of items displayed per page"
                 textSize: 12
                 textColor: appTheme.darkTextColor
                 font.bold: true
@@ -102,7 +102,7 @@ Components.Card {
                     return pageSizeInput.acceptableInput && num >= 10 && num <= 100
                 }
 
-                text: appDirectoryController.pageSize.toString()
+                text: appRecordsController.pageSize.toString()
                 
                 font.pixelSize: 12
                 color: appTheme.darkTextColor

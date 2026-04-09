@@ -7,7 +7,7 @@ class ArgumentError(Exception):
 class DatabaseErrorKind(Enum):
     INVALID_QUERY = 'Invalid query'
     UNDEFINED_PRIMARY_KEY = 'No primary key defined for this database'
-    NO_KEY = 'An entry with key does not exist'
+    NO_KEY = 'A record with key does not exist'
     DUPLICATE_KEY = 'The key already exists'
     CHANGE_KEY = 'The key cannot be changed'
     HEADER_NAME_NOT_FOUND = 'Header name not found'
@@ -25,9 +25,9 @@ class ValidationErrorKind(Enum):
     MISSING_FIELD = 'Missing Field'
 
 class ValidationError(Exception):
-    def __init__(self, entry_kind, field_kind, error_kind, message):
+    def __init__(self, entity_kind, field_kind, error_kind, message):
         super().__init__(message)
-        self.entry_kind = entry_kind
+        self.entity_kind = entity_kind
         self.field_kind = field_kind
         self.error_kind = error_kind
         self.message = message

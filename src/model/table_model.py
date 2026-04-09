@@ -1,19 +1,19 @@
 from PyQt6.QtCore import Qt, QAbstractTableModel, QModelIndex, pyqtSlot, pyqtProperty # type: ignore
 
-from src.model.schema import DirectoryKind
-from src.model.directories import DIRECTORY_MAP
+from src.model.entity_models import EntityKind
+from src.model.repositories import REPOSITORY_MAP
 
-class DirectoryTableModel(QAbstractTableModel):
+class RecordTableModel(QAbstractTableModel):
     def __init__(self):
         super().__init__()
-        self._dir_kind = DirectoryKind.STUDENT
-        self._headers = DIRECTORY_MAP[self._dir_kind].get_columns()
+        self._entity_kind = EntityKind.STUDENT
+        self._headers = REPOSITORY_MAP[self._entity_kind].get_columns()
         self._data = [] # This data holds only the exact rows for the current page
 
-    def resetModel(self, dir_kind, data : list[dict] = None):
+    def resetModel(self, entity_kind, data : list[dict] = None):
         self.beginResetModel()
-        self._dir_kind = dir_kind
-        self._headers = DIRECTORY_MAP[dir_kind].get_columns()
+        self._entity_kind = entity_kind
+        self._headers = REPOSITORY_MAP[entity_kind].get_columns()
         self._data = data if data is not None else []
         self.endResetModel()
     
@@ -36,7 +36,7 @@ class DirectoryTableModel(QAbstractTableModel):
     
     def headerData(self, section, orientation, role = Qt.ItemDataRole.DisplayRole):
         if role == Qt.ItemDataRole.DisplayRole and orientation == Qt.Orientation.Horizontal:
-            return self._dir_kind.get_entry_type().get_fields()[self._headers[section]].display_name
+            return self._entity_kind.get_model().get_fields()[self._headers[section]].display_name
         return None
     
     @pyqtSlot(int, result = 'QVariantMap')
@@ -53,10 +53,10 @@ class DirectoryTableModel(QAbstractTableModel):
         the header title and all visible rows in the current page.
         """
         # if the table is empty or booting up
-        if not self._data or not self._dir_kind:
+        if not self._data or not self._entity_kind:
             return 150 
             
-        columns = DIRECTORY_MAP[self._dir_kind].get_columns()
+        columns = REPOSITORY_MAP[self._entity_kind].get_columns()
         if column < 0 or column >= len(columns):
             return 150
             
@@ -64,7 +64,7 @@ class DirectoryTableModel(QAbstractTableModel):
         
         # start with the length of the Header title
         try:
-            fields_info = self._dir_kind.get_entry_type().get_fields()
+            fields_info = self._entity_kind.get_model().get_fields()
             header_text = fields_info[col_key].display_name
             max_chars = len(header_text)
         except Exception:

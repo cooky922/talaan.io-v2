@@ -16,7 +16,7 @@ Rectangle {
     function clearSearchText(removeFocus = true) {
         searchInput.clear()
         searchDebounce.stop()
-        appDirectoryController.updateSearch("")
+        appRecordsController.updateSearch("")
         if (removeFocus)
             searchInput.focus = false
     }
@@ -49,8 +49,8 @@ Rectangle {
             color: "#333333"
             font.pixelSize: 12
             placeholderText: {
-                let directoryName = appDirectoryController.currentDirectoryName.toLowerCase()
-                return `Search ${directoryName}s...`
+                let entityName = appRecordsController.selectedEntityName.toLowerCase()
+                return `Search ${entityName}s...`
             }
             placeholderTextColor: color
             
@@ -67,21 +67,21 @@ Rectangle {
                 interval: 10
                 repeat: false
                 onTriggered: {
-                    appDirectoryController.updateSearch(searchInput.text)
+                    appRecordsController.updateSearch(searchInput.text)
                 }
             }
 
             onTextEdited: searchDebounce.restart()
             onAccepted: {
                 searchDebounce.stop()
-                appDirectoryController.updateSearch(searchInput.text)
+                appRecordsController.updateSearch(searchInput.text)
             }
 
             Connections {
-                target: appDirectoryController
+                target: appRecordsController
                 function onSearchChanged() {
                     if (!searchInput.activeFocus) {
-                        searchInput.text = appDirectoryController.searchText
+                        searchInput.text = appRecordsController.searchText
                     }
                 }
             }
@@ -129,20 +129,20 @@ Rectangle {
             Layout.fillHeight: true
             hoverEnabled: true
 
-            model: appDirectoryController.filterOptions
-            currentIndex: appDirectoryController.searchFilterIndex
+            model: appRecordsController.filterOptions
+            currentIndex: appRecordsController.searchFilterIndex
             onActivated: (index) => {
-                appDirectoryController.setSearchFilterIndex(index)
+                appRecordsController.setSearchFilterIndex(index)
             }
 
             HoverHandler { cursorShape: Qt.PointingHandCursor }
             indicator: Item {}
 
             Connections {
-                target: appDirectoryController
+                target: appRecordsController
                 function onSearchChanged() {
                     if (!filterBox.popup.visible) {
-                        filterBox.currentIndex = appDirectoryController.searchFilterIndex
+                        filterBox.currentIndex = appRecordsController.searchFilterIndex
                     }
                 }
             }

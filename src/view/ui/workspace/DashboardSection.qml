@@ -383,7 +383,7 @@ ScrollView {
 
             component ItemCountCard : Components.Card {
                 cardColor: mouseArea.containsMouse ? appTheme.activeButtonBorderColor : appTheme.activeButtonBgColor
-                property string directoryName: "Student"
+                property string entityName: "Student"
 
                 ColumnLayout {
                     anchors.fill: parent
@@ -393,15 +393,15 @@ ScrollView {
                     Components.TitleText {
                         text: {
                             let totalCount = 0
-                            if (directoryName === "Student") totalCount = appDashboardController.totalStudents
-                            else if (directoryName === "Program") totalCount = appDashboardController.totalPrograms
-                            else if (directoryName === "College") totalCount = appDashboardController.totalColleges
+                            if (entityName === "Student") totalCount = appDashboardController.totalStudents
+                            else if (entityName === "Program") totalCount = appDashboardController.totalPrograms
+                            else if (entityName === "College") totalCount = appDashboardController.totalColleges
                             return totalCount.toString()
                         }
                         textSize: 32; textColor: "white"
                     }
                     Components.InfoText { 
-                        text: `${directoryName.toUpperCase()}S`
+                        text: `${entityName.toUpperCase()}S`
                         textSize: 13; textColor: "white"; font.bold: true
                     }
                     Item { Layout.fillHeight: true }
@@ -413,8 +413,8 @@ ScrollView {
                     hoverEnabled: true
                     cursorShape: Qt.PointingHandCursor
                     onClicked: {
-                        appDirectoryController.changeDirectory(directoryName)
-                        workspacePage.currentSection = "directory"
+                        appRecordsController.reselectEntity(entityName)
+                        workspacePage.currentSection = "records"
                     }
                 }
             }
@@ -422,19 +422,19 @@ ScrollView {
             ItemCountCard { 
                 Layout.preferredWidth: 140
                 Layout.fillHeight: true
-                directoryName: "Student" 
+                entityName: "Student" 
             }
 
             ItemCountCard { 
                 Layout.preferredWidth: 140
                 Layout.fillHeight: true
-                directoryName: "Program" 
+                entityName: "Program" 
             }
 
             ItemCountCard { 
                 Layout.preferredWidth: 140
                 Layout.fillHeight: true
-                directoryName: "College" 
+                entityName: "College" 
             }
 
             // > Explore Card

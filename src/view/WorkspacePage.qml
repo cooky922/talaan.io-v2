@@ -23,13 +23,13 @@ Rectangle {
     property string pendingAction: ""
     property var pendingOldData: null
     property var pendingNewData: null
-    // options: "dashboard", "directory", "history", "settings"
+    // options: "dashboard", "records", "history", "settings"
     property string currentSection: "dashboard"
     
     // > sidebar state
     property bool isSidebarCollapsed: false
 
-    function handleEntryDialogResponse(response) {
+    function handleRecordDialogResponse(response) {
         toast.showToast(response.message, !response.success) 
         recordDialog.hide()
         // reset values
@@ -122,10 +122,10 @@ Rectangle {
                         anchors.rightMargin: 20
                         spacing: 15
 
-                        // Show SearchBar in Directory
+                        // Show SearchBar in Records Section
                         WorkspaceUI.SearchBar {
                             id: searchBar
-                            visible: workspacePage.currentSection === "directory"
+                            visible: workspacePage.currentSection === "records"
                             Layout.preferredWidth: 440 
                             Layout.preferredHeight: 40
                             Layout.alignment: Qt.AlignLeft | Qt.AlignVCenter
@@ -165,7 +165,7 @@ Rectangle {
                             onAboutRequested: {}
                             onLogoutRequested: {
                                 workspacePage.isEditMode = false
-                                appDirectoryController.resetStates()
+                                appRecordsController.resetStates()
                                 stackView.pop(StackView.Immediate)
                             }
                         }
@@ -227,7 +227,7 @@ Rectangle {
                         isActive: workspacePage.currentSection === "dashboard"
                         onClicked: {
                             searchBar.clearSearchText()
-                            appDirectoryController.resetStates()
+                            appRecordsController.resetStates()
                             workspacePage.currentSection = "dashboard"
                             workspacePage.isEditMode = false
                         }
@@ -240,10 +240,10 @@ Rectangle {
                         Layout.alignment: Qt.AlignHCenter
                         text: "Students"
                         iconSource: "../../../assets/images/icons/students-dark.svg"
-                        isActive: workspacePage.currentSection === "directory" && appDirectoryController.currentDirectoryName === "Student"
+                        isActive: workspacePage.currentSection === "records" && appRecordsController.selectedEntityName === "Student"
                         onClicked: { 
-                            appDirectoryController.changeDirectory("Student")
-                            workspacePage.currentSection = "directory"
+                            appRecordsController.reselectEntity("Student")
+                            workspacePage.currentSection = "records"
                             workspacePage.isEditMode = false 
                         }
                     }
@@ -253,10 +253,10 @@ Rectangle {
                         Layout.alignment: Qt.AlignHCenter
                         text: "Programs"
                         iconSource: "../../../assets/images/icons/programs-dark.svg"
-                        isActive: workspacePage.currentSection === "directory" && appDirectoryController.currentDirectoryName === "Program"
+                        isActive: workspacePage.currentSection === "records" && appRecordsController.selectedEntityName === "Program"
                         onClicked: { 
-                            appDirectoryController.changeDirectory("Program")
-                            workspacePage.currentSection = "directory"
+                            appRecordsController.reselectEntity("Program")
+                            workspacePage.currentSection = "records"
                             workspacePage.isEditMode = false 
                         }
                     }
@@ -266,10 +266,10 @@ Rectangle {
                         Layout.alignment: Qt.AlignHCenter
                         text: "Colleges"
                         iconSource: "../../../assets/images/icons/colleges-dark.svg"
-                        isActive: workspacePage.currentSection === "directory" && appDirectoryController.currentDirectoryName === "College"
+                        isActive: workspacePage.currentSection === "records" && appRecordsController.selectedEntityName === "College"
                         onClicked: { 
-                            appDirectoryController.changeDirectory("College")
-                            workspacePage.currentSection = "directory"
+                            appRecordsController.reselectEntity("College")
+                            workspacePage.currentSection = "records"
                             workspacePage.isEditMode = false 
                         }
                     }
@@ -284,7 +284,7 @@ Rectangle {
                         isActive: workspacePage.currentSection === "history"
                         onClicked: {
                             searchBar.clearSearchText()
-                            appDirectoryController.resetStates() 
+                            appRecordsController.resetStates() 
                             workspacePage.currentSection = "history"
                             workspacePage.isEditMode = false
                         }
@@ -298,7 +298,7 @@ Rectangle {
                         isActive: workspacePage.currentSection === "settings"
                         onClicked: {
                             searchBar.clearSearchText()
-                            appDirectoryController.resetStates() 
+                            appRecordsController.resetStates() 
                             workspacePage.currentSection = "settings"
                             workspacePage.isEditMode = false
                         }
@@ -313,7 +313,7 @@ Rectangle {
                 Layout.fillWidth: true
                 Layout.fillHeight: true
 
-                // => directory section (default)
+                // => records section
                 ColumnLayout {
                     anchors.fill: parent
                     anchors.leftMargin: 20
@@ -321,7 +321,7 @@ Rectangle {
                     anchors.topMargin: 0
                     anchors.bottomMargin: 20
                     spacing: 10
-                    visible: workspacePage.currentSection === "directory"
+                    visible: workspacePage.currentSection === "records"
 
                     // > control zone
                     RowLayout {
@@ -331,7 +331,7 @@ Rectangle {
                         Item { Layout.fillWidth: true } 
 
                         Components.ActionButton {
-                            text: "Add " + appDirectoryController.currentDirectoryName
+                            text: "Add " + appRecordsController.selectedEntityName
                             textSize: 12
                             buttonColor: appTheme.activeButtonBgColor
                             iconSource: "../../../assets/images/icons/add-light.svg"
@@ -377,7 +377,7 @@ Rectangle {
                                 Layout.bottomMargin: 0
                             }
 
-                            WorkspaceUI.DirectoryArea {
+                            WorkspaceUI.RecordTableArea {
                                 Layout.fillWidth: true
                                 Layout.fillHeight: true
                             }
@@ -443,16 +443,16 @@ Rectangle {
     // > global UI components
     WorkspaceUI.Toast { id: toast }
 
-    WorkspaceUI.EntryDialog {
+    WorkspaceUI.RecordDialog {
         id: recordDialog
 
         onRequestAdd: (newData) => {
-            let response = appDirectoryController.addRecord(newData)
-            workspacePage.handleEntryDialogResponse(response)
+            let response = appRecordsController.addRecord(newData)
+            workspacePage.handleRecordDialogResponse(response)
         }
 
         onRequestUpdate: (oldData, newData) => {
-            let primaryKey = appDirectoryController.getPrimaryKey()
+            let primaryKey = appRecordsController.getPrimaryKey()
             if (oldData[primaryKey] != newData[primaryKey]) {
                 workspacePage.pendingAction = "update"
                 workspacePage.pendingOldData = oldData
@@ -464,8 +464,8 @@ Rectangle {
                 confirmBox.isWarning = true
                 confirmBox.show()
             } else {
-                let response = appDirectoryController.updateRecord(oldData, newData)
-                workspacePage.handleEntryDialogResponse(response)
+                let response = appRecordsController.updateRecord(oldData, newData)
+                workspacePage.handleRecordDialogResponse(response)
             }
         }
 
@@ -474,7 +474,7 @@ Rectangle {
             workspacePage.pendingOldData = oldData
 
             confirmBox.titleText = "Confirm Delete"
-            if (appDirectoryController.currentDirectoryName === "Student")
+            if (appRecordsController.selectedEntityName === "Student")
                 confirmBox.messageText = "Are you sure you want to delete this record?\n\nThis action cannot be undone.\n\nAre you sure?"
             else 
                 confirmBox.messageText = "Are you sure you want to delete this record?\n\nThis action cannot be undone.\n\nThis might also trigger setting null across the database.\n\nAre you sure?"
@@ -489,11 +489,11 @@ Rectangle {
 
         onAccepted: {
             if (workspacePage.pendingAction === "delete") {
-                let response = appDirectoryController.deleteRecord(workspacePage.pendingOldData)
-                workspacePage.handleEntryDialogResponse(response)
+                let response = appRecordsController.deleteRecord(workspacePage.pendingOldData)
+                workspacePage.handleRecordDialogResponse(response)
             } else if (workspacePage.pendingAction === "update") {
-                let response = appDirectoryController.updateRecord(workspacePage.pendingOldData, workspacePage.pendingNewData)
-                workspacePage.handleEntryDialogResponse(response)
+                let response = appRecordsController.updateRecord(workspacePage.pendingOldData, workspacePage.pendingNewData)
+                workspacePage.handleRecordDialogResponse(response)
             }
         }
     }

@@ -1,31 +1,31 @@
 import math
 from PyQt6.QtCore import QObject, pyqtSlot, pyqtProperty, pyqtSignal
 from src.database.queries import Paged, Sorted, Search
-from src.model.schema import DirectoryKind
+from src.model.entity_models import EntityKind
 from src.model.errors import ValidationError, DatabaseError
-from src.model.directories import (
-    StudentDirectory, 
-    ProgramDirectory, 
-    CollegeDirectory,
-    DIRECTORY_MAP
+from src.model.repositories import (
+    StudentRepository, 
+    ProgramRepository, 
+    CollegeRepository,
+    REPOSITORY_MAP
 )
     
-class QMLDirectoryController(QObject):
-    directoryChanged = pyqtSignal()
+class QMLRecordsController(QObject):
+    selectedEntityChanged = pyqtSignal()
     paginationChanged = pyqtSignal()
     sortStateChanged = pyqtSignal()
     searchChanged = pyqtSignal()
 
-    def __init__(self, model, parent = None):
+    def __init__(self, table_model, parent = None):
         super().__init__(parent)
-        self.model = model
-        self.dir_kind = DirectoryKind.STUDENT # default directory
+        self.table_model = table_model
+        self.entity_kind = EntityKind.STUDENT # default selected entity kind
         
         # Core States
         self._page_index = 0
         self._page_size = 100
-        self._visible_entries = 0
-        self._total_entries = 0
+        self._visible_item_count = 0 # visible number of records in the current page
+        self._total_item_count = 0 # total number of records matching the criteria
 
         self._filter_options = None
         self.resetFilterOptions()
@@ -37,20 +37,20 @@ class QMLDirectoryController(QObject):
         self._search_filter_index = 0
 
     @pyqtProperty(int, notify = paginationChanged)
-    def totalEntries(self):
-        return self._total_entries
+    def totalItemCount(self):
+        return self._total_item_count
     
     @pyqtProperty(int, notify = paginationChanged)
-    def visibleEntries(self):
-        return self._visible_entries
+    def visibleItemCount(self):
+        return self._visible_item_count
 
-    @pyqtProperty(str, notify = directoryChanged)
-    def currentDirectoryName(self):
-        return self.dir_kind.value
+    @pyqtProperty(str, notify = selectedEntityChanged)
+    def selectedEntityName(self):
+        return self.entity_kind.value
 
     @pyqtSlot(result = str)
     def getPrimaryKey(self):
-        return DIRECTORY_MAP[self.dir_kind].get_primary_key()
+        return REPOSITORY_MAP[self.entity_kind].get_primary_key()
 
     @pyqtProperty(int, notify = paginationChanged)
     def pageIndex(self):
@@ -62,11 +62,11 @@ class QMLDirectoryController(QObject):
 
     @pyqtProperty(int, notify = paginationChanged)
     def totalPages(self):
-        if self._total_entries == 0:
+        if self._total_item_count == 0:
             return 1
-        return max(1, math.ceil(self._total_entries / self._page_size))
+        return max(1, math.ceil(self._total_item_count / self._page_size))
     
-    @pyqtProperty(list, notify = directoryChanged)
+    @pyqtProperty(list, notify = selectedEntityChanged)
     def filterOptions(self):
         return self._filter_options
     
@@ -86,17 +86,17 @@ class QMLDirectoryController(QObject):
     def searchFilterIndex(self):
         return self._search_filter_index
     
-    @pyqtProperty('QVariantList', notify = directoryChanged)
-    def currentDirectorySchema(self):
-        fields = self.dir_kind.get_entry_type().get_fields()
+    @pyqtProperty('QVariantList', notify = selectedEntityChanged)
+    def selectedEntityTransformedModel(self):
+        fields = self.entity_kind.get_model().get_fields()
         def get_options(field_name : str):
             match field_name:
                 case 'gender':
                     return ['Male', 'Female', 'Other']
-                case 'program_code' if self.dir_kind == DirectoryKind.STUDENT:
-                    return ['None'] + sorted(ProgramDirectory.get_keys())
-                case 'college_code' if self.dir_kind == DirectoryKind.PROGRAM:
-                    return ['None'] + sorted(CollegeDirectory.get_keys())
+                case 'program_code' if self.entity_kind == EntityKind.STUDENT:
+                    return ['None'] + sorted(ProgramRepository.get_keys())
+                case 'college_code' if self.entity_kind == EntityKind.PROGRAM:
+                    return ['None'] + sorted(CollegeRepository.get_keys())
                 case _:
                     return []
         return [{
@@ -106,19 +106,19 @@ class QMLDirectoryController(QObject):
         } for _, field_info in fields.items()]
     
     @pyqtSlot(str)
-    def changeDirectory(self, directory_name):
-        if self.currentDirectoryName != directory_name:
-            match directory_name:
-                case 'Student': self.dir_kind = DirectoryKind.STUDENT
-                case 'Program': self.dir_kind = DirectoryKind.PROGRAM
-                case 'College': self.dir_kind = DirectoryKind.COLLEGE
+    def reselectEntity(self, entity_name):
+        if self.selectedEntityName != entity_name:
+            match entity_name:
+                case 'Student': self.entity_kind = EntityKind.STUDENT
+                case 'Program': self.entity_kind = EntityKind.PROGRAM
+                case 'College': self.entity_kind = EntityKind.COLLEGE
             self._page_index = 0
             self.resetFilterOptions()
             self._search_filter_index = 0
             self._sort_field_index = 0
             self._sort_ascending = True
             self.sortStateChanged.emit()
-            self.directoryChanged.emit()
+            self.selectedEntityChanged.emit()
             self.refreshTable()
 
     @pyqtSlot(str)
@@ -193,7 +193,7 @@ class QMLDirectoryController(QObject):
 
     @pyqtSlot()
     def resetStates(self):
-        self.dir_kind = DirectoryKind.STUDENT
+        self.entity_kind = EntityKind.STUDENT
         self._page_index = 0
         self._sort_field_index = 0
         self._sort_ascending = True
@@ -202,7 +202,7 @@ class QMLDirectoryController(QObject):
         self._filter_options = None
         self.resetFilterOptions()
         self.sortStateChanged.emit()
-        self.directoryChanged.emit()
+        self.selectedEntityChanged.emit()
         self.searchChanged.emit()
         self.refreshTable()
 
@@ -212,21 +212,21 @@ class QMLDirectoryController(QObject):
         return old_data == self.normalizeRecord(new_data)
 
     @pyqtSlot('QVariantMap', 'QVariantMap', str, result = 'QVariantMap')
-    def validateForm(self, initial_data, current_data, mode):
+    def validateRecord(self, initial_data, current_data, mode):
         # initialize things ...
-        EntryType = self.dir_kind.get_entry_type()
-        ParentDirectoryType = DIRECTORY_MAP.get(self.dir_kind.get_parent())
+        entity_model = self.entity_kind.get_model()
+        parent_repository = REPOSITORY_MAP.get(self.entity_kind.get_parent())
         primary_key = self.getPrimaryKey()
         # status
         errors = {}
         is_valid = True
         
-        # 1. Check for empty fields based on your schema
-        for col in DIRECTORY_MAP[self.dir_kind].get_columns():
+        # 1. Check for empty fields based on your entity models
+        for col in REPOSITORY_MAP[self.entity_kind].get_columns():
             val = current_data.get(col, '')
             # defer empty string checking to field validation
             try:
-                EntryType.validate_field(EntryType.FieldKind.from_internal_name(col), val, ParentDirectoryType)
+                entity_model.validate_field(entity_model.FieldKind.from_internal_name(col), val, parent_repository)
             except ValidationError as e:
                 errors[col] = e.message
                 is_valid = False
@@ -237,7 +237,7 @@ class QMLDirectoryController(QObject):
                     if mode == 'edit' and current_data[primary_key] == initial_data[primary_key]:
                         continue
                     # check if the key already exists
-                    DIRECTORY_MAP[self.dir_kind].check_duplicate_key(val)
+                    REPOSITORY_MAP[self.entity_kind].check_duplicate_key(val)
                 except DatabaseError as e:
                     errors[col] = e.message
                     is_valid = False
@@ -250,7 +250,7 @@ class QMLDirectoryController(QObject):
     def addRecord(self, new_data):
         try:
             record = self.normalizeRecord(new_data)
-            DIRECTORY_MAP[self.dir_kind].add_record(record)
+            REPOSITORY_MAP[self.entity_kind].add_record(record)
             return {'success': True, 'message': 'Record added successfully.'}
         except Exception as e:
             return {'success': False, 'message': str(e)}
@@ -263,7 +263,7 @@ class QMLDirectoryController(QObject):
             updates = self.normalizeRecord(new_data)
             primary_key = self.getPrimaryKey()
             old_key_value = str(old_data[primary_key])
-            DIRECTORY_MAP[self.dir_kind].update_record(updates, key = old_key_value)
+            REPOSITORY_MAP[self.entity_kind].update_record(updates, key = old_key_value)
             return {'success': True, 'message': 'Changes saved successfully.'}
         except Exception as e:
             print(f'Error updating record: {e}')
@@ -276,7 +276,7 @@ class QMLDirectoryController(QObject):
         try:
             primary_key = self.getPrimaryKey()
             key_value = str(old_data[primary_key])
-            DIRECTORY_MAP[self.dir_kind].delete_record(key = key_value)
+            REPOSITORY_MAP[self.entity_kind].delete_record(key = key_value)
             return {'success': True, 'message': 'Record deleted successfully.'}
         except Exception as e:
             return {'success': False, 'message': str(e)}
@@ -295,22 +295,22 @@ class QMLDirectoryController(QObject):
                 new_data[k] = None
             else:
                 new_data[k] = str(v)
-        for col in DIRECTORY_MAP[self.dir_kind].get_columns():
+        for col in REPOSITORY_MAP[self.entity_kind].get_columns():
             if col not in data:
                 new_data[col] = None
         return new_data
 
     def resetFilterOptions(self):
         self._filter_options = ['All Fields'] + [
-            self.dir_kind
-                .get_entry_type()
+            self.entity_kind
+                .get_model()
                 .get_fields()[column].display_name
-            for column in DIRECTORY_MAP[self.dir_kind].get_columns()
+            for column in REPOSITORY_MAP[self.entity_kind].get_columns()
         ]
 
     def refreshTable(self):
         # get columns
-        columns = DIRECTORY_MAP[self.dir_kind].get_columns()
+        columns = REPOSITORY_MAP[self.entity_kind].get_columns()
         
         # building a 'where' clause
         search_request = None
@@ -319,23 +319,23 @@ class QMLDirectoryController(QObject):
             if self._search_filter_index == 0:
                 search_request = Search(text = search_str, prefix_match = False)
             else:
-                use_prefix_match = self.dir_kind == DirectoryKind.STUDENT and self._search_filter_index == 6
+                use_prefix_match = self.entity_kind == EntityKind.STUDENT and self._search_filter_index == 6
                 search_request = Search(text = search_str, field = columns[self._search_filter_index - 1], prefix_match = use_prefix_match)
 
         # sorted and paged request
         paged_request = Paged.Specific(index = self._page_index + 1, size = self._page_size)
         sorted_request = Sorted.By(column = columns[self._sort_field_index] , ascending = self._sort_ascending)
 
-        self._total_entries = DIRECTORY_MAP[self.dir_kind].get_count(search = search_request)
+        self._total_item_count = REPOSITORY_MAP[self.entity_kind].get_count(search = search_request)
 
-        entries = DIRECTORY_MAP[self.dir_kind].get_records(
+        entries = REPOSITORY_MAP[self.entity_kind].get_records(
             search = search_request,
             sorted = sorted_request,
             paged = paged_request
         )
 
-        self.model.resetModel(self.dir_kind, entries)
+        self.table_model.resetModel(self.entity_kind, entries)
 
-        self._visible_entries = len(entries)
+        self._visible_item_count = len(entries)
 
         self.paginationChanged.emit()

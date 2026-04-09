@@ -7,11 +7,11 @@ from PyQt6.QtGui import QSurfaceFormat, QIcon # type: ignore
 from PyQt6.QtQml import QQmlApplicationEngine # type: ignore
 from PyQt6.QtWidgets import QApplication
 
-from src.controller.directory_controller import QMLDirectoryController
+from src.controller.records_controller import QMLRecordsController
 from src.controller.dashboard_controller import QMLDashboardController
 from src.controller.settings_controller import QMLSettingsController
 from src.database.database import SQLDatabase
-from src.model.table_model import DirectoryTableModel
+from src.model.table_model import RecordTableModel
 from src.view.theme import FontLoader, QMLAppTheme
 from src.utils import QMLUtils
 
@@ -30,9 +30,9 @@ class App(QApplication):
         QSurfaceFormat.setDefaultFormat(fmt)
 
         # TODO: Remove this and replace with proper migration system.
-        # CollegeDirectory.import_from_csv(Path(__file__).parent.parent / 'data' / 'colleges.csv')
-        # ProgramDirectory.import_from_csv(Path(__file__).parent.parent / 'data' / 'programs.csv')
-        # StudentDirectory.import_from_csv(Path(__file__).parent.parent / 'data' / 'students.csv')
+        # CollegeRepository.import_from_csv(Path(__file__).parent.parent / 'data' / 'colleges.csv')
+        # ProgramRepository.import_from_csv(Path(__file__).parent.parent / 'data' / 'programs.csv')
+        # StudentRepository.import_from_csv(Path(__file__).parent.parent / 'data' / 'students.csv')
 
         super().__init__([])
 
@@ -57,32 +57,32 @@ class App(QApplication):
         # Creating objects necessary for QML bridge
         self.appUtils = QMLUtils(self)
         self.appTheme = QMLAppTheme(self)
-        self.appDirectoryModel = DirectoryTableModel()
-        self.appDirectoryController = QMLDirectoryController(self.appDirectoryModel, self)
-        self.appDirectoryController.refreshTable()
+        self.appRecordTableModel = RecordTableModel()
+        self.appRecordsController = QMLRecordsController(self.appRecordTableModel, self)
+        self.appRecordsController.refreshTable()
 
         self.appDashboardController = QMLDashboardController(self)
         self.appDashboardController.refreshData()
 
         self.appSettingsController = QMLSettingsController(self)
 
-        self.appDirectoryController.setPageSize(self.appSettingsController.pageSize)
+        self.appRecordsController.setPageSize(self.appSettingsController.pageSize)
         self.appTheme.setThemeColor(self.appSettingsController.themeColorIndex)
 
         self.appSettingsController.themeColorIndexChanged.connect(self.appTheme.setThemeColor)
-        self.appSettingsController.pageSizeChanged.connect(self.appDirectoryController.setPageSize)
+        self.appSettingsController.pageSizeChanged.connect(self.appRecordsController.setPageSize)
 
         # Prepare QML context properties and load file
         context = self.engine.rootContext()
         context.setContextProperty('appUtils', self.appUtils)
         context.setContextProperty('appTheme', self.appTheme)
-        context.setContextProperty('appDirectoryModel', self.appDirectoryModel)
-        context.setContextProperty('appDirectoryController', self.appDirectoryController)
+        context.setContextProperty('appRecordTableModel', self.appRecordTableModel)
+        context.setContextProperty('appRecordsController', self.appRecordsController)
         context.setContextProperty('appDashboardController', self.appDashboardController)
         context.setContextProperty('appSettingsController', self.appSettingsController)
         self.engine.load(QUrl.fromLocalFile(App.app_qml_file_path))
 
-        # Return early if invalid (e.g. QML errors)
+        # Return early if invalid (ex: QML errors)
         if not self.engine.rootObjects():
             self.exitApp(-1)
 

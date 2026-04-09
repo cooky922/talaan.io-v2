@@ -66,8 +66,8 @@ Rectangle {
                                     color: "#59634b"
                                     font.pixelSize: 9
 
-                                    visible: appDirectoryController.sortFieldIndex === index
-                                    opacity: appDirectoryController.sortAscending ? 1 : 0
+                                    visible: appRecordsController.sortFieldIndex === index
+                                    opacity: appRecordsController.sortAscending ? 1 : 0
                                 }
 
                                 Text {
@@ -75,8 +75,8 @@ Rectangle {
                                     color: "#59634b"
                                     font.pixelSize: 9
 
-                                    visible: appDirectoryController.sortFieldIndex === index
-                                    opacity: appDirectoryController.sortAscending ? 0 : 1
+                                    visible: appRecordsController.sortFieldIndex === index
+                                    opacity: appRecordsController.sortAscending ? 0 : 1
                                 }
                             }
                         }
@@ -97,7 +97,7 @@ Rectangle {
                             cursorShape: Qt.PointingHandCursor
                             
                             onClicked: {
-                                appDirectoryController.toggleSort(index)
+                                appRecordsController.toggleSort(index)
                             }
                         }
 
@@ -115,10 +115,10 @@ Rectangle {
 
                 // empty state
                 Components.InfoText {
-                    visible: appDirectoryController.totalEntries === 0
+                    visible: appRecordsController.totalItemCount === 0
                     Layout.alignment: Qt.AlignCenter
 
-                    text: appDirectoryController.searchText.length === 0 ? "Empty directory (╥﹏╥)" : "No results found (╥﹏╥)"
+                    text: appRecordsController.searchText.length === 0 ? "Empty repository (╥﹏╥)" : "No results found (╥﹏╥)"
                     textSize: 42
                     textColor: "#888888"
                     font.bold: true
@@ -128,14 +128,14 @@ Rectangle {
                 Item {
                     Layout.fillWidth: true
                     Layout.fillHeight: true
-                    visible: appDirectoryController.totalEntries === 0
+                    visible: appRecordsController.totalItemCount === 0
                 }
 
                 // table body
                 TableView {
                     id: tableView
-                    visible: appDirectoryController.totalEntries > 0
-                    model: appDirectoryModel
+                    visible: appRecordsController.totalItemCount > 0
+                    model: appRecordTableModel
                     clip: true
                     columnSpacing: 0
                     rowSpacing: 0
@@ -149,11 +149,11 @@ Rectangle {
                     property int hoveredRow: -1
 
                     columnWidthProvider: function(column) {
-                        let contentWidth = appDirectoryModel.getColumnWidth(column)
+                        let contentWidth = appRecordTableModel.getColumnWidth(column)
                         if (column === tableView.columns - 1) {
                             let usedSpace = 0
                             for (let i = 0; i < tableView.columns - 1; i++) {
-                                usedSpace += appDirectoryModel.getColumnWidth(i)
+                                usedSpace += appRecordTableModel.getColumnWidth(i)
                             }
                             let remainingSpace = tableView.width - usedSpace
                             return Math.max(contentWidth, remainingSpace)
@@ -166,7 +166,7 @@ Rectangle {
 
                     // > force the table to recalculate if the database data changes
                     Connections {
-                        target: appDirectoryModel
+                        target: appRecordTableModel
                         function onModelReset() {
                             tableView.contentX = 0
                             tableView.contentY = 0
@@ -195,7 +195,7 @@ Rectangle {
 
                         TapHandler {
                             onTapped: {
-                                let rowData = appDirectoryModel.getRowData(row)
+                                let rowData = appRecordTableModel.getRowData(row)
                                 if (workspacePage.isEditMode)
                                     recordDialog.openForEdit(rowData)
                                 else

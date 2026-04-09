@@ -23,9 +23,9 @@ Window {
     color: "white"
 
     title: {
-        if (root.mode === "info") return `${appDirectoryController.currentDirectoryName} Information`
-        if (root.mode === "add") return `Add New ${appDirectoryController.currentDirectoryName}`
-        return `Edit ${appDirectoryController.currentDirectoryName}`
+        if (root.mode === "info") return `${appRecordsController.selectedEntityName} Information`
+        if (root.mode === "add") return `Add New ${appRecordsController.selectedEntityName}`
+        return `Edit ${appRecordsController.selectedEntityName}`
     }
 
     // > signals
@@ -50,7 +50,7 @@ Window {
 
     function openForAdd() {
         mode = "add"
-        currentData = appDirectoryController.currentDirectoryName === "Student" ? {'year' : 1} : ({})
+        currentData = appRecordsController.selectedEntityName === "Student" ? {'year' : 1} : ({})
         initialData = ({})
         formErrors = ({})
         touchedFields = ({})
@@ -80,15 +80,15 @@ Window {
 
     function triggerValidation() {
         if (mode === "info") return;
-        let result = appDirectoryController.validateForm(root.initialData, root.currentData, root.mode)
+        let result = appRecordsController.validateRecord(root.initialData, root.currentData, root.mode)
         root.isFormValid = result.isValid
         root.formErrors = result.errors
     }
     
     function updateField(key, value) {
-        let directoryName = appDirectoryController.currentDirectoryName
-        if (value === "None" && ((directoryName === "Student" && key === "program_code") || 
-                                 (directoryName === "Program" && key === "college_code")))
+        let entityName = appRecordsController.selectedEntityName
+        if (value === "None" && ((entityName === "Student" && key === "program_code") || 
+                                 (entityName === "Program" && key === "college_code")))
             value = ""
             
         let temp = Object.assign({}, root.currentData)
@@ -136,7 +136,7 @@ Window {
                 property int rowSpacing: 10 
 
                 Repeater {
-                    model: appDirectoryController.currentDirectorySchema
+                    model: appRecordsController.selectedEntityTransformedModel
 
                     // = Individual Information Fields 
                     delegate: Column {
@@ -145,10 +145,10 @@ Window {
                         property bool hasError: fieldKey !== "year" && isTouched && root.formErrors[fieldKey] !== undefined
                         property bool isLockedEdit: root.mode === "edit" && fieldKey === "id"
                         property bool isComboField: {
-                            let directoryName = appDirectoryController.currentDirectoryName
-                            if (directoryName === "Student") 
+                            let entityName = appRecordsController.selectedEntityName
+                            if (entityName === "Student") 
                                 return fieldKey === "gender" || fieldKey === "program_code"
-                            else if (directoryName === "Program") 
+                            else if (entityName === "Program") 
                                 return fieldKey === "college_code"
                             else 
                                 return false
@@ -404,7 +404,7 @@ Window {
                         // = [4] Split Student ID Widget (ADD Mode Only)
                         RowLayout {
                             id: splitIdRow
-                            visible: root.mode === "add" && fieldKey === "id" && appDirectoryController.currentDirectoryName === "Student"
+                            visible: root.mode === "add" && fieldKey === "id" && appRecordsController.selectedEntityName === "Student"
                             width: parent.width
                             height: 32
                             spacing: 6
@@ -506,7 +506,7 @@ Window {
 
                         // = [5] Text Input Widget (Default)
                         TextField {
-                            visible: root.mode !== "info" && !isComboField && fieldKey !== "year" && !(root.mode === "add" && fieldKey === "id" && appDirectoryController.currentDirectoryName === "Student")
+                            visible: root.mode !== "info" && !isComboField && fieldKey !== "year" && !(root.mode === "add" && fieldKey === "id" && appRecordsController.selectedEntityName === "Student")
                             width: parent.width
                             height: 32
                             text: root.currentData[fieldKey] || ""
@@ -577,15 +577,15 @@ Window {
                 bordered: true
                 enabled: {
                     if (root.mode === "edit")
-                        return !appDirectoryController.areRecordsEqual(root.initialData, root.currentData)
-                    else if (appDirectoryController.currentDirectoryName === "Student" && root.mode === "add")
+                        return !appRecordsController.areRecordsEqual(root.initialData, root.currentData)
+                    else if (appRecordsController.selectedEntityName === "Student" && root.mode === "add")
                         return root.currentData && (Object.keys(root.currentData).length > 1 || parseInt(root.currentData.year) !== 1)
                     else
                         return root.currentData && Object.keys(root.currentData).length > 0  
                 }
                 onClicked: {
                     if (root.mode === "add") {
-                        root.currentData = appDirectoryController.currentDirectoryName === "Student" ? {"year" : 1} : ({})
+                        root.currentData = appRecordsController.selectedEntityName === "Student" ? {"year" : 1} : ({})
                     } else if (root.mode === "edit") {
                         root.currentData = Object.assign({}, root.initialData)
                     }
@@ -613,7 +613,7 @@ Window {
                 visible: root.mode !== "info"
                 enabled: {
                     if (root.mode === "edit")
-                        return root.isFormValid && !appDirectoryController.areRecordsEqual(root.initialData, root.currentData)
+                        return root.isFormValid && !appRecordsController.areRecordsEqual(root.initialData, root.currentData)
                     else return root.isFormValid
                 }
                 text: root.mode === "edit" ? "Save Changes" : "Add Record"

@@ -1,6 +1,6 @@
 from PyQt6.QtCore import QObject, pyqtProperty, pyqtSignal, pyqtSlot # type: ignore
 from src.database.database import SQLDatabase
-from src.model.directories import StudentDirectory, ProgramDirectory, CollegeDirectory
+from src.model.repositories import StudentRepository, ProgramRepository, CollegeRepository
 
 class QMLDashboardController(QObject):
     # > signal emitted once all queries finish updating the state
@@ -62,9 +62,9 @@ class QMLDashboardController(QObject):
     # ==========================================
     @pyqtSlot()
     def refreshData(self):        
-        self._total_students = StudentDirectory.get_count()
-        self._total_programs = ProgramDirectory.get_count()
-        self._total_colleges = CollegeDirectory.get_count()
+        self._total_students = StudentRepository.get_count()
+        self._total_programs = ProgramRepository.get_count()
+        self._total_colleges = CollegeRepository.get_count()
 
         null_students_query = "SELECT COUNT(*) FROM students WHERE program_code IS NULL OR program_code = ''"
         self._null_program_students = SQLDatabase.fetch_scalar(null_students_query) or 0

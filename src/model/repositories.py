@@ -5,23 +5,23 @@ import csv
 from src.database.database import SQLDatabase
 from src.database.queries import Sorted, Paged, Search
 from src.model.errors import DatabaseError, DatabaseErrorKind
-from src.model.schema import *
+from src.model.entity_models import *
 
-# Base directory
-class BaseDirectory:
+# Base repository
+class BaseRepository:
 
     # subclasses declare the following:
     TABLE: str = ''
     PRIMARY_KEY: str = ''
-    KIND: DirectoryKind = None
-    PARENT_KIND: Optional[DirectoryKind] = None
+    KIND: EntityKind = None
+    PARENT_KIND: Optional[EntityKind] = None
 
     @classmethod
-    def get_kind(cls) -> DirectoryKind:
+    def get_kind(cls) -> EntityKind:
         return cls.KIND
     
     @classmethod
-    def get_parent_kind(cls) -> Optional[DirectoryKind]:
+    def get_parent_kind(cls) -> Optional[EntityKind]:
         return cls.PARENT_KIND
     
     @classmethod
@@ -30,7 +30,7 @@ class BaseDirectory:
     
     @classmethod
     def get_columns(cls) -> List[str]:
-        return list(cls.KIND.get_entry_type().get_fields().keys())
+        return list(cls.KIND.get_model().get_fields().keys())
     
     # deprecated
     @classmethod
@@ -104,7 +104,7 @@ class BaseDirectory:
     @classmethod
     def check_record_exists(cls, key: str) -> None:
         if not cls.has_key(key):
-            raise DatabaseError(DatabaseErrorKind.NO_KEY, f'An entry with key \'{key}\' does not exist in {cls.TABLE}')
+            raise DatabaseError(DatabaseErrorKind.NO_KEY, f'A record with key \'{key}\' does not exist in {cls.TABLE}')
     
     @classmethod
     def check_duplicate_key(cls, key: str) -> None:
@@ -115,7 +115,7 @@ class BaseDirectory:
     def add_record(cls, record: dict[str, Union[str, int, None]], requires_checking: bool = True) -> int:
         if requires_checking:
             cls.check_duplicate_key(str(record[cls.PRIMARY_KEY]))
-            cls.KIND.get_entry_type().validate_entry(record, requires_all = True, parent_directory = DIRECTORY_MAP.get(cls.PARENT_KIND))
+            cls.KIND.get_model().validate_record(record, requires_all = True, parent_repository = REPOSITORY_MAP.get(cls.PARENT_KIND))
         columns = ', '.join(record.keys())
         placeholders = ', '.join(['%s'] * len(record))
         query = f'INSERT INTO {cls.TABLE} ({columns}) VALUES ({placeholders})'
@@ -125,7 +125,7 @@ class BaseDirectory:
     def update_record(cls, updates: dict[str, Union[str, int, None]], key : str, requires_checking: bool = True) -> int:
         if requires_checking:
             cls.check_record_exists(key)
-            cls.KIND.get_entry_type().validate_entry(updates, requires_all = False, parent_directory = DIRECTORY_MAP.get(cls.PARENT_KIND))
+            cls.KIND.get_model().validate_record(updates, requires_all = False, parent_repository = REPOSITORY_MAP.get(cls.PARENT_KIND))
         set_clause = ', '.join([f'{column} = %s' for column in updates.keys()])
         query = f'UPDATE {cls.TABLE} SET {set_clause} WHERE {cls.PRIMARY_KEY} = %s'
         params = list(updates.values()) + [key]
@@ -152,7 +152,7 @@ class BaseDirectory:
             columns = cls.get_columns()
             placeholders = ', '.join(['%s'] * len(columns))
             col_str = ', '.join(columns)
-            # ignore duplicate keys since we want to allow re-importing the same file for updates, but we will still validate the entries
+            # ignore duplicate keys since we want to allow re-importing the same file for updates, but we will still validate the total_item_count
             query = f'INSERT IGNORE INTO {cls.TABLE} ({col_str}) VALUES ({placeholders})'
             
             params_seq = []
@@ -187,11 +187,11 @@ class BaseDirectory:
         except Exception as e:
             return False
     
-class StudentDirectory(BaseDirectory):
+class StudentRepository(BaseRepository):
     TABLE = 'students'
     PRIMARY_KEY = 'id'
-    KIND = DirectoryKind.STUDENT
-    PARENT_KIND = DirectoryKind.PROGRAM
+    KIND = EntityKind.STUDENT
+    PARENT_KIND = EntityKind.PROGRAM
 
     @classmethod
     def get_ids(cls) -> List[str]:
@@ -201,11 +201,11 @@ class StudentDirectory(BaseDirectory):
     def has_id(cls, key: str) -> bool:
         return cls.has_key(key)
 
-class ProgramDirectory(BaseDirectory):
+class ProgramRepository(BaseRepository):
     TABLE = 'programs'
     PRIMARY_KEY = 'program_code'
-    KIND = DirectoryKind.PROGRAM
-    PARENT_KIND = DirectoryKind.COLLEGE
+    KIND = EntityKind.PROGRAM
+    PARENT_KIND = EntityKind.COLLEGE
 
     @classmethod
     def get_program_codes(cls) -> List[str]:
@@ -215,10 +215,10 @@ class ProgramDirectory(BaseDirectory):
     def has_program_code(cls, key: str) -> bool:
         return cls.has_key(key)
 
-class CollegeDirectory(BaseDirectory):
+class CollegeRepository(BaseRepository):
     TABLE = 'colleges'
     PRIMARY_KEY = 'college_code'
-    KIND = DirectoryKind.COLLEGE
+    KIND = EntityKind.COLLEGE
     PARENT_KIND = None
 
     @classmethod
@@ -229,9 +229,9 @@ class CollegeDirectory(BaseDirectory):
     def has_college_code(cls, key: str) -> bool:
         return cls.has_key(key)
 
-# directory_map
-DIRECTORY_MAP = {
-    DirectoryKind.STUDENT: StudentDirectory,
-    DirectoryKind.PROGRAM: ProgramDirectory,
-    DirectoryKind.COLLEGE: CollegeDirectory,
+# repository_map
+REPOSITORY_MAP = {
+    EntityKind.STUDENT: StudentRepository,
+    EntityKind.PROGRAM: ProgramRepository,
+    EntityKind.COLLEGE: CollegeRepository,
 }
