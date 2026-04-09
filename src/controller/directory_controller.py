@@ -215,7 +215,7 @@ class QMLDirectoryController(QObject):
     def validateForm(self, initial_data, current_data, mode):
         # initialize things ...
         EntryType = self.dir_kind.get_entry_type()
-        ParentDirectoryType = DIRECTORY_MAP[self.dir_kind.get_parent()]
+        ParentDirectoryType = DIRECTORY_MAP.get(self.dir_kind.get_parent())
         primary_key = self.getPrimaryKey()
         # status
         errors = {}
@@ -226,10 +226,7 @@ class QMLDirectoryController(QObject):
             val = current_data.get(col, '')
             # defer empty string checking to field validation
             try:
-                if self.dir_kind != DirectoryKind.COLLEGE:
-                    EntryType.validate_field(EntryType.FieldKind.from_internal_name(col), val, ParentDirectoryType)
-                else:
-                    EntryType.validate_field(EntryType.FieldKind.from_internal_name(col), val)
+                EntryType.validate_field(EntryType.FieldKind.from_internal_name(col), val, ParentDirectoryType)
             except ValidationError as e:
                 errors[col] = e.message
                 is_valid = False

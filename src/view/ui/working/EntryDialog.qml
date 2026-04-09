@@ -54,7 +54,7 @@ Window {
         initialData = ({})
         formErrors = ({})
         touchedFields = ({})
-        triggerValidation() 
+        triggerValidation()
         root.show() 
     }
 
@@ -324,7 +324,12 @@ Window {
                             height: 32
                             from: 1
                             to: 4
-                            value: root.currentData[fieldKey] ? parseInt(root.currentData[fieldKey]) : 1
+                            value: {
+                                if (fieldKey !== "year")
+                                    return 1
+                                let parsed = parseInt(root.currentData[fieldKey])
+                                return isNaN(parsed) ? 1 : parsed
+                            }
                             editable: false
                             
                             onValueModified: { updateField(fieldKey, value) }
@@ -412,7 +417,7 @@ Window {
                                 id: idYearInput
                                 Layout.preferredWidth: 135
                                 Layout.fillHeight: true
-                                text: String(root.currentData[fieldKey] || "").split("-")[0] || ""
+                                text: fieldKey === "id" ? (String(root.currentData[fieldKey] || "").split("-")[0] || "") : ""
                                 placeholderText: "YYYY"
                                 placeholderTextColor: "#6B7280" // > Darker placeholder
                                 font.pixelSize: 12
@@ -448,7 +453,7 @@ Window {
                                 id: idSuffixInput
                                 Layout.fillWidth: true
                                 Layout.fillHeight: true
-                                text: String(root.currentData[fieldKey] || "").split("-")[1] || ""
+                                text: fieldKey === "id" ? (String(root.currentData[fieldKey] || "").split("-")[1] || "") : ""
                                 placeholderText: "NNNN"
                                 placeholderTextColor: "#6B7280" // > Darker placeholder
                                 font.pixelSize: 12
