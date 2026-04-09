@@ -135,7 +135,7 @@ Rectangle {
     Component.onCompleted: {
         let comp = Qt.createComponent("WorkingPage.qml")
         if (comp.status === Component.Error) {
-            appUtils.printLog(`QML Error: ${comp.errorString()}`) // This will tell you exactly which line has the missing bracket!
+            appUtils.printLog(`QML Error: ${comp.errorString()}`)
         }
         preloadedWorkingPage = comp.createObject(null)
     }

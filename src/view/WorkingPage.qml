@@ -24,7 +24,7 @@ Rectangle {
     property var pendingOldData: null
     property var pendingNewData: null
     // options: "dashboard", "directory", "history", "settings"
-    property string currentSection: "directory"
+    property string currentSection: "dashboard"
     
     // > sidebar state
     property bool isSidebarCollapsed: false
@@ -396,12 +396,10 @@ Rectangle {
                     spacing: 10
                     visible: workingPage.currentSection === "dashboard"
 
-                    Components.InfoText { 
-                        text: "Dashboard content goes here..."
-                        textColor: "black"
-                    }
-
-                    Item { Layout.fillHeight: true; Layout.fillWidth: true }                
+                    WorkingUI.DashboardSection { 
+                        Layout.fillWidth: true
+                        Layout.fillHeight: true
+                    }              
                 }
 
                 // => history section

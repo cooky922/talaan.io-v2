@@ -3,16 +3,18 @@ import os
 import sys
 from pathlib import Path
 from PyQt6.QtCore import QUrl # type: ignore
-from PyQt6.QtGui import QGuiApplication, QIcon # type: ignore
+from PyQt6.QtGui import QSurfaceFormat, QIcon # type: ignore
 from PyQt6.QtQml import QQmlApplicationEngine # type: ignore
+from PyQt6.QtWidgets import QApplication
 
 from src.controller.directory_controller import QMLDirectoryController
+from src.controller.dashboard_controller import QMLDashboardController
 from src.database.database import SQLDatabase
 from src.model.table_model import DirectoryTableModel
 from src.view.theme import FontLoader, QMLAppTheme
 from src.utils import QMLUtils
 
-class App(QGuiApplication):
+class App(QApplication):
     windows_app_id = 'ccc151.talaan_io.desktop_app.2_0'
     app_icon_file_path = str(Path(__file__).parent.parent / 'assets' / 'images' / 'icons' / 'app-logo.ico')
     app_qml_file_path = str(Path(__file__).parent.parent / 'src' / 'view' / 'MainWindow.qml')
@@ -20,6 +22,11 @@ class App(QGuiApplication):
     def __init__(self):
         # Load Database First
         SQLDatabase.initialize()
+
+        # Force Hardware Multisampling
+        fmt = QSurfaceFormat()
+        fmt.setSamples(8)
+        QSurfaceFormat.setDefaultFormat(fmt)
 
         # TODO: Remove this and replace with proper migration system.
         # CollegeDirectory.import_from_csv(Path(__file__).parent.parent / 'data' / 'colleges.csv')
@@ -49,12 +56,16 @@ class App(QGuiApplication):
         self.appDirectoryController = QMLDirectoryController(self.appDirectoryModel, self)
         self.appDirectoryController.refresh_table()
 
+        self.appDashboardController = QMLDashboardController(self)
+        self.appDashboardController.refreshData()
+
         # Prepare QML context properties and load file
         context = self.engine.rootContext()
         context.setContextProperty('appUtils', self.appUtils)
         context.setContextProperty('appTheme', self.appTheme)
         context.setContextProperty('appDirectoryModel', self.appDirectoryModel)
         context.setContextProperty('appDirectoryController', self.appDirectoryController)
+        context.setContextProperty('appDashboardController', self.appDashboardController)
         self.engine.load(QUrl.fromLocalFile(App.app_qml_file_path))
 
         # Return early if invalid (e.g. QML errors)
