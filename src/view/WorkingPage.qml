@@ -162,7 +162,6 @@ Rectangle {
                             Layout.alignment: Qt.AlignRight | Qt.AlignVCenter
                             roleText: app.activeRole === 0 ? "Admin" : "Viewer"
 
-                            onSettingsRequested: {}
                             onAboutRequested: {}
                             onLogoutRequested: {
                                 workingPage.isEditMode = false
@@ -346,7 +345,7 @@ Rectangle {
                             text: workingPage.isEditMode ? "Done" : "Edit"
                             textSize: 12
                             iconSource: workingPage.isEditMode ? "../../../assets/images/icons/done-dark.svg" : "../../../assets/images/icons/edit-light.svg"
-                            buttonColor: workingPage.isEditMode ? "#F3F4F6" : appTheme.activeButtonBgColor
+                            buttonColor: workingPage.isEditMode ? appTheme.mainBgColor : appTheme.activeButtonBgColor
                             textColor: workingPage.isEditMode ? appTheme.darkTextColor : "#FFFFFF"
                             bordered: workingPage.isEditMode
                             onClicked: workingPage.isEditMode = !workingPage.isEditMode

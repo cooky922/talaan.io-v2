@@ -13,7 +13,7 @@ class QMLUtils(QObject):
     @pyqtSlot(str, bool, bool, result = str)
     def calculateColor(self, color, is_hovered, is_pressed):
         qcolor = QColor(color)
-        is_light_color = qcolor.lightness() > 220
+        is_light_color = qcolor.lightness() >= 150
         if is_hovered:
             return (qcolor.darker(110) if is_light_color else qcolor.lighter(110)).name()
         elif is_pressed:

@@ -15,7 +15,6 @@ Button {
 
     signal logoutRequested()
     signal aboutRequested()
-    signal settingsRequested()
 
     HoverHandler {
         cursorShape: Qt.PointingHandCursor

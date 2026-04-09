@@ -169,11 +169,13 @@ Window {
 
                         // = @ Information Widget
                         Rectangle {
+                            visible: root.mode === "info"
+                            id: infoWidget
                             width: parent.width
                             height: Math.max(32, infoTextContent.implicitHeight + 16)
                             radius: 8
-                            border.color: "#D1D5DB"; color: "transparent"
-                            visible: root.mode === "info"
+                            border.color: "#D1D5DB"
+                            color: mouseArea.containsMouse ? "#EEEEEE" : "transparent"
 
                             Components.InfoText {
                                 id: infoTextContent
@@ -196,14 +198,19 @@ Window {
 
                                 wrapMode: Text.Wrap
                             }
+
+                            MouseArea {
+                                id: mouseArea
+                                anchors.fill: parent
+                                hoverEnabled: true
+                            }
                         }
 
                         // = @ Editable combobox
                         ComboBox {
+                            visible: root.mode !== "info" && isComboField
                             id: comboControl
                             model: modelData.options
-
-                            visible: root.mode !== "info" && isComboField
                             width: parent.width
                             height: 32 
                             
@@ -219,6 +226,7 @@ Window {
                                 color: "#333333"
                                 verticalAlignment: Text.AlignVCenter
                                 leftPadding: 10
+                                rightPadding: 20
 
                                 // placeholder text
                                 Text {
@@ -253,12 +261,21 @@ Window {
                                 }
                             }
                             
-                            indicator: Item {}
+                            indicator: Components.InfoText {
+                                text: "..."
+                                textSize: 16
+                                textColor: appTheme.darkTextColor
+                                font.bold: true
+                                anchors.right: parent.right
+                                anchors.rightMargin: 10
+                                anchors.verticalCenter: parent.verticalCenter
+                                anchors.verticalCenterOffset: -4 
+                            }
                             
                             background: Rectangle {
                                 radius: 8 
-                                border.color: hasError ? "#ff4c4c" : (comboControl.activeFocus ? "#8fae44" : "#CCCCCC")
-                                color: hasError ? "#fff0f0" : "white"
+                                border.color: hasError ? "#ff4c4c" : (comboControl.activeFocus ? appTheme.activeButtonBgColor : "#CCCCCC")
+                                color: comboControl.hovered ? "#EEEEEE" : "transparent"
                             }
                             
                             popup: Popup {
@@ -320,9 +337,8 @@ Window {
 
                         // = @ Spinbox Widget (for Year)
                         SpinBox {
-                            id: yearControl
-
                             visible: root.mode !== "info" && fieldKey === "year"
+                            id: yearControl
                             width: parent.width
                             height: 32
                             from: 1
@@ -339,8 +355,8 @@ Window {
 
                             background: Rectangle {
                                 radius: 8
-                                border.color: hasError ? "#ff4c4c" : (yearControl.activeFocus ? "#8fae44" : "#CCCCCC")
-                                color: hasError ? "#fff0f0" : (yearControl.activeFocus ? "#fcfff5" : "white")
+                                border.color: hasError ? "#ff4c4c" : (yearControl.activeFocus ? appTheme.activeButtonBgColor : "#CCCCCC")
+                                color: yearControl.hovered ? "#EEEEEE" : "transparent"
                             }
 
                             leftPadding: 10
@@ -351,7 +367,7 @@ Window {
                                 text: yearControl.value
                                 font.pixelSize: 12
                                 color: "#333333"
-                                selectionColor: "#8fae44"
+                                selectionColor: appTheme.activeButtonBgColor
                                 selectedTextColor: "#ffffff"
                                 horizontalAlignment: Qt.AlignLeft
                                 verticalAlignment: Qt.AlignVCenter
@@ -366,16 +382,18 @@ Window {
                                 height: 13
                                 radius: 2
                                 
-                                color: yearControl.up.pressed ? "#e4ebcc" : (yearControl.up.hovered ? "#f0f4e6" : "transparent")
+                                color: yearControl.up.pressed ? appTheme.mainBgColor : (yearControl.up.hovered ? "#EEEEEE" : "transparent")
 
                                 Text {
                                     text: "+"
                                     font.pixelSize: 13
                                     font.bold: true
-                                    color: yearControl.up.hovered ? "#8fae44" : "#888888"
+                                    color: yearControl.up.hovered ? appTheme.activeButtonBgColor : "#888888"
                                     anchors.centerIn: parent
                                     anchors.verticalCenterOffset: -1
                                 }
+
+                                HoverHandler { cursorShape: Qt.PointingHandCursor }
                             }
 
                             down.indicator: Rectangle {
@@ -386,16 +404,18 @@ Window {
                                 height: 13
                                 radius: 2
                                 
-                                color: yearControl.down.pressed ? "#e4ebcc" : (yearControl.down.hovered ? "#f0f4e6" : "transparent")
+                                color: yearControl.down.pressed ? appTheme.mainBgColor : (yearControl.down.hovered ? "#EEEEEE" : "transparent")
 
                                 Text {
                                     text: "-"
                                     font.pixelSize: 13
                                     font.bold: true
-                                    color: yearControl.down.hovered ? "#8fae44" : "#888888"
+                                    color: yearControl.down.hovered ? appTheme.activeButtonBgColor : "#888888"
                                     anchors.centerIn: parent
                                     anchors.verticalCenterOffset: -1
                                 }
+
+                                HoverHandler { cursorShape: Qt.PointingHandCursor }
                             }
                         }
 
@@ -420,9 +440,9 @@ Window {
                             }
                             
                             background: Rectangle {
-                                color: isLockedEdit ? "#f7f7f7" : (hasError ? "#fff0f0" : "white")
+                                color: isLockedEdit || parent.hovered ? "#EEEEEE" : "transparent"
                                 radius: 8
-                                border.color: isLockedEdit ? "#CCCCCC" : (hasError ? "#ff4c4c" : (parent.activeFocus ? "#8fae44" : "#CCCCCC"))
+                                border.color: isLockedEdit ? "#CCCCCC" : (hasError ? "#ff4c4c" : (parent.activeFocus ? appTheme.activeButtonBgColor : "#CCCCCC"))
                             }
                             
                             color: isLockedEdit ? "#aaaaaa" : "#333333"
