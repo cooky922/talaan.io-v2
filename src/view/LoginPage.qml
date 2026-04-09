@@ -118,7 +118,7 @@ Rectangle {
                         else 
                             return "Enter as Viewer"
                     }
-                    buttonColor: Qt.rgba(0, 0, 0, 0.60)
+                    buttonColor: Qt.rgba(0, 0, 0, 0.50)
                     Layout.fillWidth: true
                     Layout.alignment: Qt.AlignBottom | Qt.AlignHCenter
 

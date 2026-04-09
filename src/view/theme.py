@@ -85,6 +85,12 @@ class ColorSchemeKind(Enum):
         active_button_color = "#24629B",
         active_button_border_color = "#0F4374"
     )
+    YELLOW = ColorScheme(
+        background_color = "#FCEC9A",
+        background_color_last = "#FFE880",
+        active_button_color = "#FFC118",
+        active_button_border_color = "#ECA100"
+    )
     ORANGE = ColorScheme(
         background_color = "#FFD08E",
         background_color_last = "#FFBD71",
@@ -98,6 +104,7 @@ class Theme:
     CARD_SHADOW_COLOR = "#EBEBEB"
 
     LOGOUT_BUTTON_BG_COLOR = '#F45742'
+    ERROR_COLOR = '#FF4C4C'
 
     DARK_TEXT_COLOR = '#333333'
 
@@ -144,6 +151,9 @@ class QMLAppTheme(QObject):
 
     @pyqtProperty(str)
     def logoutButtonBgColor(self): return Theme.LOGOUT_BUTTON_BG_COLOR
+
+    @pyqtProperty(str)
+    def errorColor(self): return Theme.ERROR_COLOR
 
     @pyqtProperty(str)
     def darkTextColor(self): return Theme.DARK_TEXT_COLOR

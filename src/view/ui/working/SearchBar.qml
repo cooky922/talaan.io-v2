@@ -223,13 +223,14 @@ Rectangle {
 
                 contentItem: Text {
                     text: modelData
-                    color: "#374151"
+                    color: index == filterBox.highlightedIndex ? appTheme.activeButtonBgColor : "#333333"
+                    font.bold: index === filterBox.currentIndex
                     font.pixelSize: 12
                     verticalAlignment: Text.AlignVCenter
                 }
 
                 background: Rectangle {
-                    radius: 9
+                    radius: 12
                     color: appUtils.calculateColor("white", parent.hovered, false)
                 }
             }

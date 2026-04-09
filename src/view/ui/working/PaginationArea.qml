@@ -78,7 +78,14 @@ RowLayout {
                     radius: 4
                     color: "white"
                     border.width: 1
-                    border.color: pageInput.isInputValid ? "#CCCCCC" : "#ff4c4c" 
+                    border.color: {
+                        if (!pageInput.isInputValid)
+                            return appTheme.errorColor
+                        else if (pageInput.activeFocus)
+                            return appTheme.activeButtonBgColor
+                        else
+                            return "#CCCCCC"
+                    }
                 }
 
                 // > change page when user hits Enter or clicks away

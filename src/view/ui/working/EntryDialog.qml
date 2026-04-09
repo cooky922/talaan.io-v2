@@ -274,7 +274,14 @@ Window {
                             
                             background: Rectangle {
                                 radius: 8 
-                                border.color: hasError ? "#ff4c4c" : (comboControl.activeFocus ? appTheme.activeButtonBgColor : "#CCCCCC")
+                                border.color: {
+                                    if (hasError)
+                                        return appTheme.errorColor
+                                    else if (comboControl.activeFocus)
+                                        return appTheme.activeButtonBgColor
+                                    else
+                                        return "#CCCCCC"
+                                }
                                 color: comboControl.hovered ? "#EEEEEE" : "transparent"
                             }
                             
@@ -297,7 +304,7 @@ Window {
                                     implicitHeight: contentHeight
                                     model: comboControl.popup.visible ? comboControl.delegateModel : null
                                     currentIndex: comboControl.highlightedIndex
-                                    ScrollIndicator.vertical: ScrollIndicator { }
+                                    ScrollIndicator.vertical: ScrollIndicator {}
                                 }
 
                                 background: Rectangle {
@@ -355,7 +362,14 @@ Window {
 
                             background: Rectangle {
                                 radius: 8
-                                border.color: hasError ? "#ff4c4c" : (yearControl.activeFocus ? appTheme.activeButtonBgColor : "#CCCCCC")
+                                border.color: {
+                                    if (hasError)
+                                        return appTheme.errorColor
+                                    else if (yearControl.activeFocus)
+                                        return appTheme.activeButtonBgColor
+                                    else
+                                        return "#CCCCCC"
+                                }
                                 color: yearControl.hovered ? "#EEEEEE" : "transparent"
                             }
 
@@ -442,7 +456,16 @@ Window {
                             background: Rectangle {
                                 color: isLockedEdit || parent.hovered ? "#EEEEEE" : "transparent"
                                 radius: 8
-                                border.color: isLockedEdit ? "#CCCCCC" : (hasError ? "#ff4c4c" : (parent.activeFocus ? appTheme.activeButtonBgColor : "#CCCCCC"))
+                                border.color: {
+                                    if (isLockedEdit)
+                                        return "#CCCCCC"
+                                    else if (hasError)
+                                        return appTheme.errorColor
+                                    else if (parent.activeFocus)
+                                        return appTheme.activeButtonBgColor
+                                    else
+                                        return "#CCCCCC"
+                                }
                             }
                             
                             color: isLockedEdit ? "#aaaaaa" : "#333333"
@@ -459,7 +482,7 @@ Window {
                         Text {
                             text: root.formErrors[fieldKey] || ""
                             visible: hasError
-                            color: "#ff4c4c"
+                            color: appTheme.errorColor
                             font.pixelSize: 10
                             font.bold: true
                             leftPadding: 2
