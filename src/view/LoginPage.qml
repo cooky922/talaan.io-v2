@@ -62,7 +62,7 @@ Rectangle {
         }
     }
 
-    property var preloadedWorkingPage: null
+    property var preloadedWorkspacePage: null
 
     ColumnLayout {
         anchors.fill: parent
@@ -122,7 +122,7 @@ Rectangle {
                     Layout.fillWidth: true
                     Layout.alignment: Qt.AlignBottom | Qt.AlignHCenter
 
-                    onClicked: stackView.push(preloadedWorkingPage, StackView.Immediate)
+                    onClicked: stackView.push(preloadedWorkspacePage, StackView.Immediate)
                 }
             }
         }
@@ -133,10 +133,10 @@ Rectangle {
     }
 
     Component.onCompleted: {
-        let comp = Qt.createComponent("WorkingPage.qml")
+        let comp = Qt.createComponent("WorkspacePage.qml")
         if (comp.status === Component.Error) {
             appUtils.printLog(`QML Error: ${comp.errorString()}`)
         }
-        preloadedWorkingPage = comp.createObject(null)
+        preloadedWorkspacePage = comp.createObject(null)
     }
 }

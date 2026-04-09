@@ -2,10 +2,10 @@ import QtQuick
 import QtQuick.Controls
 import QtQuick.Layouts
 import "components" as Components
-import "ui/working" as WorkingUI
+import "ui/workspace" as WorkspaceUI
 
 Rectangle {
-    id: workingPage
+    id: workspacePage
     color: "transparent"
 
     Rectangle {
@@ -65,7 +65,7 @@ Rectangle {
                         anchors.left: parent.left
                         anchors.top: parent.top
                         anchors.bottom: parent.bottom
-                        width: workingPage.isSidebarCollapsed ? 0 : 80
+                        width: workspacePage.isSidebarCollapsed ? 0 : 80
                         color: Qt.rgba(246, 246, 246, 0.25)
                         clip: true
                         
@@ -106,7 +106,7 @@ Rectangle {
                             anchors.fill: parent
                             hoverEnabled: true
                             cursorShape: Qt.PointingHandCursor
-                            onClicked: workingPage.isSidebarCollapsed = !workingPage.isSidebarCollapsed
+                            onClicked: workspacePage.isSidebarCollapsed = !workspacePage.isSidebarCollapsed
                         }
                     }
                 }
@@ -123,9 +123,9 @@ Rectangle {
                         spacing: 15
 
                         // Show SearchBar in Directory
-                        WorkingUI.SearchBar {
+                        WorkspaceUI.SearchBar {
                             id: searchBar
-                            visible: workingPage.currentSection === "directory"
+                            visible: workspacePage.currentSection === "directory"
                             Layout.preferredWidth: 440 
                             Layout.preferredHeight: 40
                             Layout.alignment: Qt.AlignLeft | Qt.AlignVCenter
@@ -133,7 +133,7 @@ Rectangle {
 
                         // Show Dashboard Title
                         Components.TitleText { 
-                            visible: workingPage.currentSection === "dashboard"
+                            visible: workspacePage.currentSection === "dashboard"
                             text: "Dashboard"
                             textSize: 28 
                             Layout.alignment: Qt.AlignLeft | Qt.AlignVCenter
@@ -141,7 +141,7 @@ Rectangle {
 
                         // Show History Title
                         Components.TitleText { 
-                            visible: workingPage.currentSection === "history"
+                            visible: workspacePage.currentSection === "history"
                             text: "History"
                             textSize: 28 
                             Layout.alignment: Qt.AlignLeft | Qt.AlignVCenter
@@ -149,7 +149,7 @@ Rectangle {
 
                         // Show Settings Title
                         Components.TitleText { 
-                            visible: workingPage.currentSection === "settings"
+                            visible: workspacePage.currentSection === "settings"
                             text: "Settings"
                             textSize: 28 
                             Layout.alignment: Qt.AlignLeft | Qt.AlignVCenter
@@ -157,14 +157,14 @@ Rectangle {
 
                         Item { Layout.fillWidth: true }
 
-                        WorkingUI.AccountArea {
+                        WorkspaceUI.AccountArea {
                             Layout.preferredHeight: 40
                             Layout.alignment: Qt.AlignRight | Qt.AlignVCenter
                             roleText: app.activeRole === 0 ? "Admin" : "Viewer"
 
                             onAboutRequested: {}
                             onLogoutRequested: {
-                                workingPage.isEditMode = false
+                                workspacePage.isEditMode = false
                                 appDirectoryController.resetStates()
                                 stackView.pop(StackView.Immediate)
                             }
@@ -185,7 +185,7 @@ Rectangle {
             // > sidebar panel
             Rectangle {
                 Layout.fillHeight: true
-                Layout.preferredWidth: workingPage.isSidebarCollapsed ? 0 : 80 
+                Layout.preferredWidth: workspacePage.isSidebarCollapsed ? 0 : 80 
                 color: Qt.rgba(246, 246, 246, 0.25)
                 clip: true 
                 
@@ -224,12 +224,12 @@ Rectangle {
                         Layout.alignment: Qt.AlignHCenter
                         text: "Dashboard"
                         iconSource: "../../../assets/images/icons/dashboard-dark.svg"
-                        isActive: workingPage.currentSection === "dashboard"
+                        isActive: workspacePage.currentSection === "dashboard"
                         onClicked: {
                             searchBar.clearSearchText()
                             appDirectoryController.resetStates()
-                            workingPage.currentSection = "dashboard"
-                            workingPage.isEditMode = false
+                            workspacePage.currentSection = "dashboard"
+                            workspacePage.isEditMode = false
                         }
                     }
 
@@ -240,11 +240,11 @@ Rectangle {
                         Layout.alignment: Qt.AlignHCenter
                         text: "Students"
                         iconSource: "../../../assets/images/icons/students-dark.svg"
-                        isActive: workingPage.currentSection === "directory" && appDirectoryController.currentDirectoryName === "Student"
+                        isActive: workspacePage.currentSection === "directory" && appDirectoryController.currentDirectoryName === "Student"
                         onClicked: { 
                             appDirectoryController.changeDirectory("Student")
-                            workingPage.currentSection = "directory"
-                            workingPage.isEditMode = false 
+                            workspacePage.currentSection = "directory"
+                            workspacePage.isEditMode = false 
                         }
                     }
 
@@ -253,11 +253,11 @@ Rectangle {
                         Layout.alignment: Qt.AlignHCenter
                         text: "Programs"
                         iconSource: "../../../assets/images/icons/programs-dark.svg"
-                        isActive: workingPage.currentSection === "directory" && appDirectoryController.currentDirectoryName === "Program"
+                        isActive: workspacePage.currentSection === "directory" && appDirectoryController.currentDirectoryName === "Program"
                         onClicked: { 
                             appDirectoryController.changeDirectory("Program")
-                            workingPage.currentSection = "directory"
-                            workingPage.isEditMode = false 
+                            workspacePage.currentSection = "directory"
+                            workspacePage.isEditMode = false 
                         }
                     }
 
@@ -266,11 +266,11 @@ Rectangle {
                         Layout.alignment: Qt.AlignHCenter
                         text: "Colleges"
                         iconSource: "../../../assets/images/icons/colleges-dark.svg"
-                        isActive: workingPage.currentSection === "directory" && appDirectoryController.currentDirectoryName === "College"
+                        isActive: workspacePage.currentSection === "directory" && appDirectoryController.currentDirectoryName === "College"
                         onClicked: { 
                             appDirectoryController.changeDirectory("College")
-                            workingPage.currentSection = "directory"
-                            workingPage.isEditMode = false 
+                            workspacePage.currentSection = "directory"
+                            workspacePage.isEditMode = false 
                         }
                     }
 
@@ -281,12 +281,12 @@ Rectangle {
                         Layout.alignment: Qt.AlignHCenter
                         text: "History"
                         iconSource: "../../../assets/images/icons/history-dark.svg"
-                        isActive: workingPage.currentSection === "history"
+                        isActive: workspacePage.currentSection === "history"
                         onClicked: {
                             searchBar.clearSearchText()
                             appDirectoryController.resetStates() 
-                            workingPage.currentSection = "history"
-                            workingPage.isEditMode = false
+                            workspacePage.currentSection = "history"
+                            workspacePage.isEditMode = false
                         }
                     }
 
@@ -295,12 +295,12 @@ Rectangle {
                         Layout.alignment: Qt.AlignHCenter
                         text: "Settings"
                         iconSource: "../../../assets/images/icons/settings-dark.svg"
-                        isActive: workingPage.currentSection === "settings"
+                        isActive: workspacePage.currentSection === "settings"
                         onClicked: {
                             searchBar.clearSearchText()
                             appDirectoryController.resetStates() 
-                            workingPage.currentSection = "settings"
-                            workingPage.isEditMode = false
+                            workspacePage.currentSection = "settings"
+                            workspacePage.isEditMode = false
                         }
                     }
 
@@ -321,7 +321,7 @@ Rectangle {
                     anchors.topMargin: 0
                     anchors.bottomMargin: 20
                     spacing: 10
-                    visible: workingPage.currentSection === "directory"
+                    visible: workspacePage.currentSection === "directory"
 
                     // > control zone
                     RowLayout {
@@ -335,20 +335,20 @@ Rectangle {
                             textSize: 12
                             buttonColor: appTheme.activeButtonBgColor
                             iconSource: "../../../assets/images/icons/add-light.svg"
-                            visible: workingPage.isEditMode
+                            visible: workspacePage.isEditMode
                             onClicked: recordDialog.openForAdd()
                             topPadding: 7.5
                             bottomPadding: 7.5
                         }
 
                         Components.ActionButton {
-                            text: workingPage.isEditMode ? "Done" : "Edit"
+                            text: workspacePage.isEditMode ? "Done" : "Edit"
                             textSize: 12
-                            iconSource: workingPage.isEditMode ? "../../../assets/images/icons/done-dark.svg" : "../../../assets/images/icons/edit-light.svg"
-                            buttonColor: workingPage.isEditMode ? appTheme.mainBgColor : appTheme.activeButtonBgColor
-                            textColor: workingPage.isEditMode ? appTheme.darkTextColor : "#FFFFFF"
-                            bordered: workingPage.isEditMode
-                            onClicked: workingPage.isEditMode = !workingPage.isEditMode
+                            iconSource: workspacePage.isEditMode ? "../../../assets/images/icons/done-dark.svg" : "../../../assets/images/icons/edit-light.svg"
+                            buttonColor: workspacePage.isEditMode ? appTheme.mainBgColor : appTheme.activeButtonBgColor
+                            textColor: workspacePage.isEditMode ? appTheme.darkTextColor : "#FFFFFF"
+                            bordered: workspacePage.isEditMode
+                            onClicked: workspacePage.isEditMode = !workspacePage.isEditMode
                             topPadding: 7.5
                             bottomPadding: 7.5
                             visible: app.activeRole === 0
@@ -368,7 +368,7 @@ Rectangle {
                             anchors.bottomMargin: 10
                             spacing: 15
 
-                            WorkingUI.PaginationArea {
+                            WorkspaceUI.PaginationArea {
                                 Layout.fillWidth: true
                                 Layout.alignment: Qt.AlignTop
                                 Layout.leftMargin: 7
@@ -377,7 +377,7 @@ Rectangle {
                                 Layout.bottomMargin: 0
                             }
 
-                            WorkingUI.DirectoryArea {
+                            WorkspaceUI.DirectoryArea {
                                 Layout.fillWidth: true
                                 Layout.fillHeight: true
                             }
@@ -393,9 +393,9 @@ Rectangle {
                     anchors.topMargin: 0
                     anchors.bottomMargin: 20
                     spacing: 10
-                    visible: workingPage.currentSection === "dashboard"
+                    visible: workspacePage.currentSection === "dashboard"
 
-                    WorkingUI.DashboardSection { 
+                    WorkspaceUI.DashboardSection { 
                         Layout.fillWidth: true
                         Layout.fillHeight: true
                     }              
@@ -409,7 +409,7 @@ Rectangle {
                     anchors.topMargin: 0
                     anchors.bottomMargin: 20
                     spacing: 10
-                    visible: workingPage.currentSection === "history"
+                    visible: workspacePage.currentSection === "history"
 
                     Components.InfoText { 
                         text: "History content goes here..."
@@ -427,9 +427,9 @@ Rectangle {
                     anchors.topMargin: 0
                     anchors.bottomMargin: 20
                     spacing: 10
-                    visible: workingPage.currentSection === "settings"
+                    visible: workspacePage.currentSection === "settings"
 
-                    WorkingUI.SettingsSection {
+                    WorkspaceUI.SettingsSection {
                         Layout.fillWidth: true
                         Layout.preferredHeight: 100
                     }
@@ -441,22 +441,22 @@ Rectangle {
     }
 
     // > global UI components
-    WorkingUI.Toast { id: toast }
+    WorkspaceUI.Toast { id: toast }
 
-    WorkingUI.EntryDialog {
+    WorkspaceUI.EntryDialog {
         id: recordDialog
 
         onRequestAdd: (newData) => {
             let response = appDirectoryController.addRecord(newData)
-            workingPage.handleEntryDialogResponse(response)
+            workspacePage.handleEntryDialogResponse(response)
         }
 
         onRequestUpdate: (oldData, newData) => {
             let primaryKey = appDirectoryController.getPrimaryKey()
             if (oldData[primaryKey] != newData[primaryKey]) {
-                workingPage.pendingAction = "update"
-                workingPage.pendingOldData = oldData
-                workingPage.pendingNewData = newData
+                workspacePage.pendingAction = "update"
+                workspacePage.pendingOldData = oldData
+                workspacePage.pendingNewData = newData
 
                 confirmBox.titleText = "Confirm Key Change"
                 confirmBox.messageText = "You are changing the primary key.\n\nThis will trigger cascade renames across the database.\n\nAre you sure?"
@@ -465,13 +465,13 @@ Rectangle {
                 confirmBox.show()
             } else {
                 let response = appDirectoryController.updateRecord(oldData, newData)
-                workingPage.handleEntryDialogResponse(response)
+                workspacePage.handleEntryDialogResponse(response)
             }
         }
 
         onRequestDelete: (oldData) => {
-            workingPage.pendingAction = "delete"
-            workingPage.pendingOldData = oldData
+            workspacePage.pendingAction = "delete"
+            workspacePage.pendingOldData = oldData
 
             confirmBox.titleText = "Confirm Delete"
             if (appDirectoryController.currentDirectoryName === "Student")
@@ -484,16 +484,16 @@ Rectangle {
         }
     }
 
-    WorkingUI.MessageBox {
+    WorkspaceUI.MessageBox {
         id: confirmBox
 
         onAccepted: {
-            if (workingPage.pendingAction === "delete") {
-                let response = appDirectoryController.deleteRecord(workingPage.pendingOldData)
-                workingPage.handleEntryDialogResponse(response)
-            } else if (workingPage.pendingAction === "update") {
-                let response = appDirectoryController.updateRecord(workingPage.pendingOldData, workingPage.pendingNewData)
-                workingPage.handleEntryDialogResponse(response)
+            if (workspacePage.pendingAction === "delete") {
+                let response = appDirectoryController.deleteRecord(workspacePage.pendingOldData)
+                workspacePage.handleEntryDialogResponse(response)
+            } else if (workspacePage.pendingAction === "update") {
+                let response = appDirectoryController.updateRecord(workspacePage.pendingOldData, workspacePage.pendingNewData)
+                workspacePage.handleEntryDialogResponse(response)
             }
         }
     }

@@ -196,7 +196,7 @@ Rectangle {
                         TapHandler {
                             onTapped: {
                                 let rowData = appDirectoryModel.getRowData(row)
-                                if (workingPage.isEditMode)
+                                if (workspacePage.isEditMode)
                                     recordDialog.openForEdit(rowData)
                                 else
                                     recordDialog.openForInfo(rowData)

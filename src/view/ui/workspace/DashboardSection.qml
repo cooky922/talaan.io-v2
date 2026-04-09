@@ -156,8 +156,8 @@ ScrollView {
             anchors.fill: parent
             cursorShape: Qt.PointingHandCursor
             onClicked: {
-                if (btn.text === "History") workingPage.currentSection = "history"
-                else if (btn.text === "Settings") workingPage.currentSection = "settings"
+                if (btn.text === "History") workspacePage.currentSection = "history"
+                else if (btn.text === "Settings") workspacePage.currentSection = "settings"
             }
         }
         
@@ -414,7 +414,7 @@ ScrollView {
                     cursorShape: Qt.PointingHandCursor
                     onClicked: {
                         appDirectoryController.changeDirectory(directoryName)
-                        workingPage.currentSection = "directory"
+                        workspacePage.currentSection = "directory"
                     }
                 }
             }
