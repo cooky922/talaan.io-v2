@@ -153,7 +153,7 @@ Rectangle {
                             onLogoutRequested: {
                                 workspacePage.isEditMode = false
                                 appRecordsController.resetStates()
-                                stackView.pop(StackView.Immediate)
+                                stackView.pop()
                             }
                         }
                     }

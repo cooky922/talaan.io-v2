@@ -8,7 +8,7 @@ from PyQt6.QtQml import QQmlApplicationEngine # type: ignore
 from PyQt6.QtWidgets import QApplication
 
 from src.controller import QMLRecordsController, QMLDashboardController, QMLSettingsController
-from src.database import SQLDatabase
+from src.database import SQLDatabase, seedDatabase
 from src.model import RecordTableModel
 from src.utils import QMLUtils
 from src.view.theme import FontLoader, QMLAppTheme
@@ -26,11 +26,6 @@ class App(QApplication):
         fmt = QSurfaceFormat()
         fmt.setSamples(8)
         QSurfaceFormat.setDefaultFormat(fmt)
-
-        # TODO: Remove this and replace with proper migration system.
-        # CollegeRepository.import_from_csv(Path(__file__).parent.parent / 'data' / 'colleges.csv')
-        # ProgramRepository.import_from_csv(Path(__file__).parent.parent / 'data' / 'programs.csv')
-        # StudentRepository.import_from_csv(Path(__file__).parent.parent / 'data' / 'students.csv')
 
         super().__init__([])
 
@@ -83,6 +78,9 @@ class App(QApplication):
         # Return early if invalid (ex: QML errors)
         if not self.engine.rootObjects():
             self.exitApp(-1)
+
+        # Loading screen (at this point, the database has already been initialized)
+        seedDatabase()
 
     def run(self):
         ret = self.exec()

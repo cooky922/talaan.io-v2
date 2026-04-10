@@ -16,6 +16,11 @@ class BaseRepository:
     PARENT_KIND: Optional[EntityKind] = None
 
     @classmethod
+    def is_empty(cls) -> bool:
+        count = SQLDatabase.fetch_scalar(f'SELECT COUNT(*) FROM {cls.TABLE}')
+        return (count or 0) == 0
+
+    @classmethod
     def get_kind(cls) -> EntityKind:
         return cls.KIND
     

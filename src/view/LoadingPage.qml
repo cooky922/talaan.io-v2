@@ -2,10 +2,9 @@ import QtQuick
 import QtQuick.Controls
 import QtQuick.Layouts
 import "components" as Components
-import "ui/login" as LoginUI
 
 Rectangle {
-    id: loginPage
+    id: root
     color: "transparent"
 
     Rectangle {
@@ -62,81 +61,100 @@ Rectangle {
         }
     }
 
-    property var preloadedWorkspacePage: null
-
     ColumnLayout {
-        anchors.fill: parent
-        spacing: 0
+        anchors.centerIn: parent
+        spacing: 24
 
-        Item {
-            Layout.fillHeight: true
-        }
-
-        // = Title
-        Components.TitleText {
-            text: "talaan.io"
+        // > App Logo
+        Image {
             Layout.alignment: Qt.AlignHCenter
-        }
-
-        // = Description (below Title)
-        Components.InfoText {
-            text: "Simple Student Information System"
-            Layout.alignment: Qt.AlignHCenter
-            Layout.bottomMargin: loginPage.height * 0.075
-        }
-
-        // = Login Card (below Description)
-        Components.Card {
-            id: loginCard
-            bordered: true
-            cardColor: Qt.rgba(246, 246, 246, 0.25)
-            width: 250
-            height: 200
-
-            Layout.alignment: Qt.AlignHCenter
-
-            ColumnLayout {
-                id: cardLayout
-                anchors.fill: parent
-                anchors.leftMargin: 20
-                anchors.rightMargin: 20
-                anchors.topMargin: 10
-                anchors.bottomMargin: 20
-                spacing: 5
- 
-                // == User Role Toggle Area
-                LoginUI.UserRoleToggleArea {
-                    Layout.fillWidth: true
-                    Layout.alignment: Qt.AlignTop | Qt.AlignHCenter
-                }
-
-                // == Login Button
-                Components.ActionButton {
-                    text: {
-                        if (app.activeRole === 0)
-                            return "Enter as Admin"
-                        else 
-                            return "Enter as Viewer"
-                    }
-                    buttonColor: Qt.rgba(0, 0, 0, 0.50)
-                    Layout.fillWidth: true
-                    Layout.alignment: Qt.AlignBottom | Qt.AlignHCenter
-
-                    onClicked: stackView.push(preloadedWorkspacePage)
-                }
+            source: "../../assets/images/icons/app-logo.svg" 
+            sourceSize.width: 80
+            sourceSize.height: 80
+            fillMode: Image.PreserveAspectFit
+            
+            SequentialAnimation on opacity {
+                loops: Animation.Infinite
+                NumberAnimation { from: 1.0; to: 0.6; duration: 1000; easing.type: Easing.InOutQuad }
+                NumberAnimation { from: 0.6; to: 1.0; duration: 1000; easing.type: Easing.InOutQuad }
             }
         }
 
-        Item {
-            Layout.fillHeight: true
+        // > App Title and Subtitle
+        ColumnLayout {
+            Layout.alignment: Qt.AlignHCenter
+            spacing: 4
+            
+            Components.TitleText {
+                Layout.alignment: Qt.AlignHCenter
+                text: "talaan.io"
+            }
+            
+            Components.InfoText {
+                Layout.alignment: Qt.AlignHCenter
+                text: "Simple Student Information System"
+            }
+        }
+
+        BusyIndicator {
+            id: indicatorControl
+            Layout.alignment: Qt.AlignHCenter
+            Layout.topMargin: 16
+            width: 40
+            height: 40
+            running: true
+            
+            contentItem: Item {
+                implicitWidth: 40
+                implicitHeight: 40
+
+                Item {
+                    id: item
+                    x: parent.width / 2 - 20
+                    y: parent.height / 2 - 20
+                    width: 40
+                    height: 40
+                    opacity: 0.8
+
+                    RotationAnimator {
+                        target: item
+                        running: indicatorControl.visible && indicatorControl.running
+                        from: 0
+                        to: 360
+                        loops: Animation.Infinite
+                        duration: 1250
+                    }
+
+                    Repeater {
+                        id: repeater
+                        model: 6
+
+                        Rectangle {
+                            x: item.width / 2 - width / 2
+                            y: item.height / 2 - height / 2
+                            implicitWidth: 8
+                            implicitHeight: 8
+                            radius: 4
+                            color: "black"
+                            transform: [
+                                Translate { y: -14 },
+                                Rotation { angle: index / repeater.count * 360; origin.x: 4; origin.y: 14 }
+                            ]
+                        }
+                    }
+                }
+            }
         }
     }
 
-    Component.onCompleted: {
-        let comp = Qt.createComponent("WorkspacePage.qml")
-        if (comp.status === Component.Error) {
-            appUtils.printLog(`QML Error: ${comp.errorString()}`)
+    // = 4. ROUTING LOGIC =
+    Timer {
+        id: loadTimer
+        interval: 2000 
+        running: true
+        repeat: false
+        onTriggered: {
+            root.StackView.view.replace("LoginPage.qml")
         }
-        preloadedWorkspacePage = comp.createObject(null)
     }
 }
