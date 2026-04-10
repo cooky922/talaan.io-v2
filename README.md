@@ -6,7 +6,11 @@
 
 This project is developed in fulfillment of the requirements for the subject **CCC151 - Information Management**.
 
-![App screenshot](./assets/documentation/app_screenshot.png)
+![Login screenshot](./assets/documentation/ss_login.png)
+![Dashboard screenshot](./assets/documentation/ss_dashboard.png)
+![Admin screenshot](./assets/documentation/ss_admin.png)
+![Viewer screenshot](./assets/documentation/ss_viewer.png)
+![Settings screenshot](./assets/documentation/ss_settings.png)
 
 ## ✨ Features
 * Create, read, update, delete, and list (CRUDL) operations for all three directories (students, programs, and colleges)
@@ -16,12 +20,9 @@ This project is developed in fulfillment of the requirements for the subject **C
 * Sort operations by field and order by clicking sections of the table header
 * Pagination control for large records
 * Admin and viewer mode. Admin is able to view and modify all directories, whereas the viewer can only view them.
-
-## Planned Features
-* Save recent changes or undo all recent changes
-* Demographics (summary) page
+* Dashboard page that contains demographics
 * About page
-* Settings page (customizable experience)
+* Settings page that provides personalized colored themes
 * Batch operations (batch edit, batch delete)
 
 ## 🧰 Tech Stack
@@ -30,15 +31,11 @@ This project is developed in fulfillment of the requirements for the subject **C
 |---|---|
 | [Python 3](https://www.python.org/) | Core application language |
 | [PyQt6](https://pypi.org/project/PyQt6/) | Desktop GUI framework |
+| [QML](https://doc.qt.io/qt-6/qtqml-index.html) | Desktop GUI framework |
+| [MySQL](https://www.mysql.com/) | Relational database management system |
+| [Faker](https://faker.readthedocs.io/en/master/) | Mock data generator for student records |
 
 ## 🚀 Getting Started
-
-### ✅ Prerequisites
-
-| Requirement | Notes |
-|---|---|
-| [Python 3.10+](https://www.python.org/downloads/) | Required to run the application |
-| [PyQt6](https://pypi.org/project/PyQt6/) | Install via pip |
 
 ### ⚙️ Installation
 
@@ -51,7 +48,7 @@ TODO
 **1. Clone the Repository**
 ```sh
 git clone https://github.com/cooky922/talaan.io-v2.git
-cd talaan.io
+cd talaan.io-v2
 ```
 **2. Create and Activate a Virtual Environment**
 ```sh
@@ -79,7 +76,8 @@ source talaan_env/bin/activate
 ```sh
 pip install -e .
 ```
-___
+Once the dependencies are installed, create an `.env` file for your database credentials.
+Inside the `.env` file, input your database credentials in the example given by `.env.example`.
 
 **5. Running the Project**
 Ensure the virtual environment is activated and all dependencies were installed properly
