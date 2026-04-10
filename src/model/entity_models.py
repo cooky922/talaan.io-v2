@@ -94,10 +94,18 @@ class StudentModel:
                                           'ID Number must start with 20XX')
 
             case StudentModel.FieldKind.FIRST_NAME:
-                pass
+                if not str(input).replace(' ', '').isalpha():
+                    raise ValidationError(EntityKind.STUDENT,
+                                          StudentModel.FieldKind.FIRST_NAME,
+                                          ValidationErrorKind.INVALID_FORMAT,
+                                          'Alphabetic characters only')
 
             case StudentModel.FieldKind.LAST_NAME:
-                pass
+                if not str(input).replace(' ', '').isalpha():
+                    raise ValidationError(EntityKind.STUDENT,
+                                          StudentModel.FieldKind.LAST_NAME,
+                                          ValidationErrorKind.INVALID_FORMAT,
+                                          'Alphabetic characters only')
 
             case StudentModel.FieldKind.PROGRAM_CODE:
                 if input not in [None, ''] and parent_repository is not None and not parent_repository.has_program_code(input):
@@ -218,7 +226,6 @@ class CollegeModel:
                                   'This field cannot be empty')
         match field: 
             case CollegeModel.FieldKind.COLLEGE_CODE:
-                # Must be in one word and all capitals
                 if len(input.split()) != 1:
                     raise ValidationError(EntityKind.COLLEGE, 
                                           CollegeModel.FieldKind.COLLEGE_CODE,
