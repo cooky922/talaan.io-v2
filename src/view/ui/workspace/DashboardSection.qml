@@ -339,7 +339,7 @@ ScrollView {
                         Layout.alignment: Qt.AlignLeft
                         Image { source: "../../../../assets/images/icons/done-dark.svg"; sourceSize.width: 18; sourceSize.height: 18 }
                         Components.InfoText { 
-                            text: "System operates normally. No data issues detected."
+                            text: "System operates normally."
                             textColor: "#333333"; textSize: 12
                         }
                     }

@@ -39,6 +39,7 @@ Button {
                 height: root.iconSource !== "" ? textSize * 1.1 : 0
                 anchors.verticalCenter: parent.verticalCenter
                 visible: root.iconSource !== ""
+                opacity: root.enabled ? 1.0 : 0.6
 
                 Image {
                     id: buttonIcon
@@ -65,6 +66,7 @@ Button {
                 font.bold: true
                 font.family: appTheme.rethinkSansFontName
                 anchors.verticalCenter: parent.verticalCenter
+                opacity: root.enabled ? 1.0 : 0.6
             }
         }
     }

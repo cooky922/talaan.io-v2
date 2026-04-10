@@ -20,23 +20,11 @@ Rectangle {
     
     // > states 
     property bool isEditMode: false
-    property string pendingAction: ""
-    property var pendingOldData: null
-    property var pendingNewData: null
     // options: "dashboard", "records", "history", "settings"
     property string currentSection: "dashboard"
     
     // > sidebar state
     property bool isSidebarCollapsed: false
-
-    function handleRecordDialogResponse(response) {
-        toast.showToast(response.message, !response.success) 
-        recordDialog.hide()
-        // reset values
-        pendingAction = ""
-        pendingOldData = null
-        pendingNewData = null
-    }
 
     // > main layout
     ColumnLayout {
@@ -320,68 +308,11 @@ Rectangle {
                     anchors.rightMargin: 20
                     anchors.topMargin: 0
                     anchors.bottomMargin: 20
-                    spacing: 10
+                    spacing: 0
                     visible: workspacePage.currentSection === "records"
 
-                    // > control zone
-                    RowLayout {
+                    WorkspaceUI.RecordsSection {
                         Layout.fillWidth: true
-                        spacing: 10
-
-                        Item { Layout.fillWidth: true } 
-
-                        Components.ActionButton {
-                            text: "Add " + appRecordsController.selectedEntityName
-                            textSize: 12
-                            buttonColor: appTheme.activeButtonBgColor
-                            iconSource: "../../../assets/images/icons/add-light.svg"
-                            visible: workspacePage.isEditMode
-                            onClicked: recordDialog.openForAdd()
-                            topPadding: 7.5
-                            bottomPadding: 7.5
-                        }
-
-                        Components.ActionButton {
-                            text: workspacePage.isEditMode ? "Done" : "Edit"
-                            textSize: 12
-                            iconSource: workspacePage.isEditMode ? "../../../assets/images/icons/done-dark.svg" : "../../../assets/images/icons/edit-light.svg"
-                            buttonColor: workspacePage.isEditMode ? appTheme.mainBgColor : appTheme.activeButtonBgColor
-                            textColor: workspacePage.isEditMode ? appTheme.darkTextColor : "#FFFFFF"
-                            bordered: workspacePage.isEditMode
-                            onClicked: workspacePage.isEditMode = !workspacePage.isEditMode
-                            topPadding: 7.5
-                            bottomPadding: 7.5
-                            visible: app.activeRole === 0
-                        }
-                    }
-
-                    // > data zone
-                    Components.Card {
-                        Layout.fillWidth: true
-                        Layout.fillHeight: true
-
-                        ColumnLayout {
-                            anchors.fill: parent
-                            anchors.leftMargin: 20
-                            anchors.rightMargin: 20
-                            anchors.topMargin: 10
-                            anchors.bottomMargin: 10
-                            spacing: 15
-
-                            WorkspaceUI.PaginationArea {
-                                Layout.fillWidth: true
-                                Layout.alignment: Qt.AlignTop
-                                Layout.leftMargin: 7
-                                Layout.rightMargin: 7
-                                Layout.topMargin: 5
-                                Layout.bottomMargin: 0
-                            }
-
-                            WorkspaceUI.RecordTableArea {
-                                Layout.fillWidth: true
-                                Layout.fillHeight: true
-                            }
-                        }
                     }
                 }
 
@@ -442,59 +373,4 @@ Rectangle {
 
     // > global UI components
     WorkspaceUI.Toast { id: toast }
-
-    WorkspaceUI.RecordDialog {
-        id: recordDialog
-
-        onRequestAdd: (newData) => {
-            let response = appRecordsController.addRecord(newData)
-            workspacePage.handleRecordDialogResponse(response)
-        }
-
-        onRequestUpdate: (oldData, newData) => {
-            let primaryKey = appRecordsController.getPrimaryKey()
-            if (oldData[primaryKey] != newData[primaryKey]) {
-                workspacePage.pendingAction = "update"
-                workspacePage.pendingOldData = oldData
-                workspacePage.pendingNewData = newData
-
-                confirmBox.titleText = "Confirm Key Change"
-                confirmBox.messageText = "You are changing the primary key.\n\nThis will trigger cascade renames across the database.\n\nAre you sure?"
-                confirmBox.confirmButtonText = "Update"
-                confirmBox.isWarning = true
-                confirmBox.show()
-            } else {
-                let response = appRecordsController.updateRecord(oldData, newData)
-                workspacePage.handleRecordDialogResponse(response)
-            }
-        }
-
-        onRequestDelete: (oldData) => {
-            workspacePage.pendingAction = "delete"
-            workspacePage.pendingOldData = oldData
-
-            confirmBox.titleText = "Confirm Delete"
-            if (appRecordsController.selectedEntityName === "Student")
-                confirmBox.messageText = "Are you sure you want to delete this record?\n\nThis action cannot be undone.\n\nAre you sure?"
-            else 
-                confirmBox.messageText = "Are you sure you want to delete this record?\n\nThis action cannot be undone.\n\nThis might also trigger setting null across the database.\n\nAre you sure?"
-            confirmBox.confirmButtonText = "Delete"
-            confirmBox.isWarning = true
-            confirmBox.show()
-        }
-    }
-
-    WorkspaceUI.MessageBox {
-        id: confirmBox
-
-        onAccepted: {
-            if (workspacePage.pendingAction === "delete") {
-                let response = appRecordsController.deleteRecord(workspacePage.pendingOldData)
-                workspacePage.handleRecordDialogResponse(response)
-            } else if (workspacePage.pendingAction === "update") {
-                let response = appRecordsController.updateRecord(workspacePage.pendingOldData, workspacePage.pendingNewData)
-                workspacePage.handleRecordDialogResponse(response)
-            }
-        }
-    }
 }

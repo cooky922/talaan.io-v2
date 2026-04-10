@@ -57,7 +57,7 @@ class App(QApplication):
         # Creating objects necessary for QML bridge
         self.appUtils = QMLUtils(self)
         self.appTheme = QMLAppTheme(self)
-        self.appRecordTableModel = RecordTableModel()
+        self.appRecordTableModel = RecordTableModel(self)
         self.appRecordsController = QMLRecordsController(self.appRecordTableModel, self)
         self.appRecordsController.refreshTable()
 

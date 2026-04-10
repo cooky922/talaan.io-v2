@@ -46,7 +46,7 @@ Rectangle {
                             anchors.bottom: parent.bottom
 
                             Text {
-                                leftPadding: 10
+                                leftPadding: (index === 0 && workspacePage.isEditMode) ? 40 : 10
 
                                 text: model.display.toUpperCase() || ""
                                 font.bold: true
@@ -150,6 +150,9 @@ Rectangle {
 
                     columnWidthProvider: function(column) {
                         let contentWidth = appRecordTableModel.getColumnWidth(column)
+                        if (column === 0 && workspacePage.isEditMode) {
+                            contentWidth += 35
+                        }
                         if (column === tableView.columns - 1) {
                             let usedSpace = 0
                             for (let i = 0; i < tableView.columns - 1; i++) {
@@ -159,6 +162,20 @@ Rectangle {
                             return Math.max(contentWidth, remainingSpace)
                         }
                         return contentWidth
+                    }
+
+                    Connections {
+                        target: workspacePage
+                        function onIsEditModeChanged() {
+                            // > clear selections if we exit edit mode
+                            if (!workspacePage.isEditMode) {
+                                recordsSection.selectedKeys = []
+                            }
+                            let currentProvider = tableView.columnWidthProvider
+                            tableView.columnWidthProvider = null
+                            tableView.columnWidthProvider = currentProvider
+                            Qt.callLater(tableView.forceLayout)
+                        }
                     }
 
                     // > force the table to recalculate the leftover space if the window resizes
@@ -193,20 +210,52 @@ Rectangle {
                             }
                         }
 
-                        TapHandler {
-                            onTapped: {
-                                let rowData = appRecordTableModel.getRowData(row)
-                                if (workspacePage.isEditMode)
-                                    recordDialog.openForEdit(rowData)
-                                else
-                                    recordDialog.openForInfo(rowData)
+                        MouseArea {
+                            anchors.fill: parent
+                            cursorShape: Qt.PointingHandCursor
+                            preventStealing: false 
+                            
+                            onClicked: (mouse) => {
+                                let rowData = appRecordTableModel.getRowData(row) 
+                                let rowKey = rowData ? (rowData.id || rowData.program_code || rowData.college_code) : ""
+                                
+                                if (workspacePage.isEditMode && (mouse.modifiers & Qt.ShiftModifier)) {
+                                    recordsSection.toggleSelection(rowKey)
+                                } else {
+                                    if (workspacePage.isEditMode)
+                                        recordDialog.openForEdit(rowData)
+                                    else
+                                        recordDialog.openForInfo(rowData)
+                                }
+                            }
+                        }
+
+                        Rectangle {
+                            visible: column === 0 && workspacePage.isEditMode
+                            x: 0
+                            y: 0
+                            width: 40
+                            height: parent.height
+                            color: "transparent"
+                            z: 2
+                            opacity: 1.0
+                            property var rowData: appRecordTableModel.getRowData(row)
+                            property string rowKey: rowData ? (rowData.id || rowData.program_code || rowData.college_code) : ""
+                            property bool isSelected: recordsSection.selectedKeys.includes(rowKey)
+
+                            Components.ItemCheckBox {
+                                anchors.centerIn: parent
+                                checked: parent.isSelected
+                                onClicked: { recordsSection.toggleSelection(parent.rowKey) }
                             }
                         }
 
                         Text {
                             anchors.fill: parent
                             anchors.margins: 10
+                            leftPadding: (column === 0 && workspacePage.isEditMode) ? 30 : 0
                             verticalAlignment: Text.AlignVCenter
+
                             text: {
                                 if (model.display === undefined ||
                                     model.display === null ||

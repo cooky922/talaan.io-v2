@@ -130,6 +130,18 @@ class BaseRepository:
         query = f'UPDATE {cls.TABLE} SET {set_clause} WHERE {cls.PRIMARY_KEY} = %s'
         params = list(updates.values()) + [key]
         return SQLDatabase.execute(query, tuple(params))
+    
+    @classmethod
+    def update_records(cls, keys : list[str], updates: dict[str, Union[str, int, None]], requires_checking: bool = True) -> int:
+        if requires_checking:
+            for key in keys:
+                cls.check_record_exists(key)
+            cls.KIND.get_model().validate_record(updates, requires_all = False, parent_repository = REPOSITORY_MAP.get(cls.PARENT_KIND))
+        set_clause = ', '.join([f'{column} = %s' for column in updates.keys()])
+        placeholders = ', '.join(['%s'] * len(keys))
+        query = f'UPDATE {cls.TABLE} SET {set_clause} WHERE {cls.PRIMARY_KEY} IN ({placeholders})'
+        params = list(updates.values()) + keys
+        return SQLDatabase.execute(query, tuple(params))
 
     @classmethod
     def delete_record(cls, key: str, requires_checking: bool = True) -> int:
@@ -137,8 +149,14 @@ class BaseRepository:
             cls.check_record_exists(key)
         query = f'DELETE FROM {cls.TABLE} WHERE {cls.PRIMARY_KEY} = %s'
         return SQLDatabase.execute(query, (key,))
-    
-    # TODO: add bulk add/update/delete methods
+
+    @classmethod
+    def delete_records(cls, keys : list[str]) -> int:
+        if not keys:
+            return 0
+        placeholders = ', '.join(['%s'] * len(keys))
+        query = f'DELETE FROM {cls.TABLE} WHERE {cls.PRIMARY_KEY} IN ({placeholders})'
+        return SQLDatabase.execute(query, tuple(keys))
 
     @classmethod
     def import_from_csv(cls, file_path: Path) -> int:

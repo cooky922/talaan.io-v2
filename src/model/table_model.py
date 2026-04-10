@@ -4,8 +4,8 @@ from src.model.entity_models import EntityKind
 from src.model.repositories import REPOSITORY_MAP
 
 class RecordTableModel(QAbstractTableModel):
-    def __init__(self):
-        super().__init__()
+    def __init__(self, parent = None):
+        super().__init__(parent)
         self._entity_kind = EntityKind.STUDENT
         self._headers = REPOSITORY_MAP[self._entity_kind].get_columns()
         self._data = [] # This data holds only the exact rows for the current page

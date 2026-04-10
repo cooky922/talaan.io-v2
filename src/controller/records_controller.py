@@ -245,7 +245,11 @@ class QMLRecordsController(QObject):
             'isValid': is_valid,
             'errors': errors
         }
-    
+
+    @pyqtSlot(str, result = 'QVariantMap')
+    def getRecordByKey(self, key):
+        return REPOSITORY_MAP[self.entity_kind].get_record(key)
+
     @pyqtSlot('QVariantMap', result = 'QVariantMap')
     def addRecord(self, new_data):
         try:
@@ -264,7 +268,18 @@ class QMLRecordsController(QObject):
             primary_key = self.getPrimaryKey()
             old_key_value = str(old_data[primary_key])
             REPOSITORY_MAP[self.entity_kind].update_record(updates, key = old_key_value)
-            return {'success': True, 'message': 'Changes saved successfully.'}
+            return {'success': True, 'message': 'One record updated successfully.'}
+        except Exception as e:
+            print(f'Error updating record: {e}')
+            return {'success': False, 'message': str(e)}
+        finally:
+            self.refreshTable()
+
+    @pyqtSlot(list, 'QVariantMap', result = 'QVariantMap')
+    def updateRecords(self, keys, updates):
+        try:
+            REPOSITORY_MAP[self.entity_kind].update_records(keys, updates)
+            return {'success': True, 'message': 'Records updated successfully.'}
         except Exception as e:
             print(f'Error updating record: {e}')
             return {'success': False, 'message': str(e)}
@@ -278,6 +293,16 @@ class QMLRecordsController(QObject):
             key_value = str(old_data[primary_key])
             REPOSITORY_MAP[self.entity_kind].delete_record(key = key_value)
             return {'success': True, 'message': 'Record deleted successfully.'}
+        except Exception as e:
+            return {'success': False, 'message': str(e)}
+        finally:
+            self.refreshTable()
+
+    @pyqtSlot(list, result = 'QVariantMap')
+    def deleteRecords(self, keys):
+        try:
+            REPOSITORY_MAP[self.entity_kind].delete_records(keys)
+            return {'success': True, 'message': 'Records deleted successfully.'}
         except Exception as e:
             return {'success': False, 'message': str(e)}
         finally:

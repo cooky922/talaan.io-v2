@@ -4,6 +4,33 @@ import QtQuick.Layouts
 import "../../components" as Components
 
 RowLayout {
+
+    // > selection status
+    Components.InfoText {
+        visible: workspacePage.isEditMode
+        text: {
+            let selected_item_count = recordsSection.selectedKeys.length
+            if (selected_item_count === 0)
+                return "No items selected"
+            else if (selected_item_count === 1)
+                return "One item selected"
+            else
+                return `${selected_item_count} items selected`
+        }
+        textSize: 11
+        textColor: "#888888"
+        Layout.alignment: Qt.AlignVCenter
+    }
+
+    // > separator
+    Rectangle {
+        visible: workspacePage.isEditMode
+        width: 1.5
+        height: 15
+        radius: 1
+        color: "#bbbbbb"
+        Layout.alignment: Qt.AlignVCenter
+    }
     
     // > displays the number of records
     Components.InfoText {
@@ -27,7 +54,7 @@ RowLayout {
 
     Item { Layout.fillWidth: true }
 
-    // main layout 
+    // main page control
     Row {
         spacing: 5
         visible: appRecordsController.totalPages !== 1
@@ -120,6 +147,7 @@ RowLayout {
         
         Item { width: 5; height: 1 }
 
+        // > separator
         Rectangle {
             width: 1.5
             height: 15
