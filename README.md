@@ -77,7 +77,7 @@ source talaan_env/bin/activate
 pip install -e .
 ```
 Once the dependencies are installed, create an `.env` file for your database credentials.
-Inside the `.env` file, input your database credentials in the example given by `.env.example`.
+Inside the `.env` file, input your database credentials like the example given by `.env.example`.
 
 **5. Running the Project**
 Ensure the virtual environment is activated and all dependencies were installed properly
