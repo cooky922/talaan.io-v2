@@ -11,14 +11,13 @@ Button {
     implicitHeight: 35
     hoverEnabled: true
     
-    property string roleText: "Viewer"
+    // > User Data Properties
+    property string userName: "Smart User"
+    property string roleText: "Admin"
 
     signal logoutRequested()
-    signal aboutRequested()
 
-    HoverHandler {
-        cursorShape: Qt.PointingHandCursor
-    }
+    HoverHandler { cursorShape: Qt.PointingHandCursor }
 
     background: Rectangle {
         color: {
@@ -31,7 +30,6 @@ Button {
         radius: accountArea.height / 2
     }
 
-    // main button content
     contentItem: RowLayout {
         anchors.centerIn: parent
         height: parent.height
@@ -56,108 +54,118 @@ Button {
         Item { Layout.fillWidth: true }
     }
 
-    component CustomMenuItem: MenuItem {
-        id: menuItem
-        property string iconSrc: ""
-        property color itemBgColor: "white"
-        property color itemTextColor: "black"
-
-        implicitWidth: 120
-        implicitHeight: 35
-        
-        HoverHandler { cursorShape: Qt.PointingHandCursor }
-
-        background: Rectangle {
-            anchors.fill: parent
-            anchors.margins: 4
-            radius: 16
-            color: appUtils.calculateColor(menuItem.itemBgColor, menuItem.hovered, menuItem.down)
-        }
-
-        contentItem: Row {
-            spacing: 10
-            anchors.verticalCenter: parent.verticalCenter
-            anchors.left: parent.left
-            anchors.leftMargin: 15
-
-            Item {
-                width: 16; height: 16
-                anchors.verticalCenter: parent.verticalCenter
-                Image {
-                    id: menuIcon
-                    source: menuItem.iconSrc
-                    sourceSize.width: 16; sourceSize.height: 16
-                    anchors.fill: parent
-                    visible: false 
-                }
-                MultiEffect {
-                    source: menuIcon
-                    anchors.fill: menuIcon
-                    colorizationColor: menuItem.itemTextColor
-                    colorization: 1.0
-                    brightness: 1.0 
-                }
-            }
-
-            Text {
-                text: menuItem.text
-                color: menuItem.itemTextColor
-                font.pixelSize: 12
-                font.bold: true
-                anchors.verticalCenter: parent.verticalCenter
-            }
-        }
-    }
-
     onClicked: {
-        if (accountMenu.opened) {
-            accountMenu.close()
+        if (accountPopup.opened) {
+            accountPopup.close()
         } else {
-            accountMenu.open()
+            accountPopup.open()
         }
     }
 
-    // dropdown menu
-    Menu {
-        id: accountMenu
+    Popup {
+        id: accountPopup
         
         x: accountArea.width - width
         y: accountArea.height + 5
-        padding: 5
-
-        closePolicy: Popup.CloseOnEscape | Popup.CloseOnPressOutsideParent
         
+        width: 140
+        padding: 10
+        margins: 0
+        
+        closePolicy: Popup.CloseOnEscape | Popup.CloseOnPressOutside
+
+        // > Popup Background & Shadow
         background: Rectangle {
-            implicitWidth: 120
             color: "white"
+            radius: 12
             border.color: "#CCCCCC"
             border.width: 1
-            radius: 10
-        }
 
-        // > menu items
-        CustomMenuItem {
-            text: "About"
-            iconSrc: "../../../../assets/images/icons/info-dark.svg"
-            onTriggered: accountArea.aboutRequested()
-        }
-
-        MenuSeparator {
-            contentItem: Rectangle {
-                implicitWidth: 100
-                implicitHeight: 2
-                color: "#CCCCCC"
-                radius: 2
-                anchors.horizontalCenter: parent.horizontalCenter
+            layer.enabled: true
+            layer.effect: MultiEffect {
+                shadowEnabled: true
+                shadowBlur: 15
+                shadowOpacity: 0.1
+                shadowVerticalOffset: 4
             }
         }
 
-        CustomMenuItem {
-            text: "Logout"
-            iconSrc: "../../../../assets/images/icons/logout-light.svg"
-            itemBgColor: appTheme.logoutButtonBgColor
-            itemTextColor: "#ffffff"
-            onTriggered: accountArea.logoutRequested()
+        // > Popup Content Layout
+        ColumnLayout {
+            anchors.fill: parent
+            spacing: 4
+
+            // >> User Identity
+            Item {
+                Layout.fillWidth: true
+                Layout.preferredHeight: 40
+
+                RowLayout {
+                    anchors.fill: parent
+                    anchors.margins: 0
+                    spacing: 5
+
+                    // >> avatar circle
+                    Rectangle {
+                        width: 30
+                        height: 30
+                        radius: 15
+                        color: appTheme.activeButtonBgColor 
+                        
+                        Components.InfoText {
+                            anchors.centerIn: parent
+                            text: accountArea.userName.charAt(0).toUpperCase()
+                            textColor: "white"
+                            font.bold: true
+                            textSize: 16
+                        }
+                    }
+
+                    // >> name and role text
+                    ColumnLayout {
+                        Layout.fillWidth: true
+                        spacing: 2
+
+                        Components.InfoText {
+                            text: accountArea.userName
+                            textColor: appTheme.darkTextColor
+                            font.bold: true
+                            textSize: 14
+                        }
+
+                        Components.InfoText {
+                            text: accountArea.roleText
+                            textColor: "#888888" 
+                            textSize: 11
+                        }
+                    }
+                }
+            }
+
+            // > actions
+            Item {
+                Layout.fillWidth: true
+                Layout.preferredHeight: 28
+
+                Components.ActionButton {
+                    anchors.centerIn: parent
+                    width: 120
+                    
+                    text: "Log Out"
+                    textSize: 12
+                    textColor: "white"
+                    buttonColor: appTheme.logoutButtonBgColor 
+                    iconSource: "../../../assets/images/icons/logout-light.svg" 
+                    
+                    onClicked: {
+                        accountPopup.close()
+                        accountArea.logoutRequested()
+                    }
+
+                    topPadding: 5
+                    bottomPadding: 5
+                }
+            }
         }
     }
 }

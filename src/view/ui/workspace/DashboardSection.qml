@@ -156,7 +156,7 @@ ScrollView {
             anchors.fill: parent
             cursorShape: Qt.PointingHandCursor
             onClicked: {
-                if (btn.text === "History") workspacePage.currentSection = "history"
+                if (btn.text === "About") workspacePage.currentSection = "about"
                 else if (btn.text === "Settings") workspacePage.currentSection = "settings"
             }
         }
@@ -461,8 +461,8 @@ ScrollView {
                         spacing: 2
                         
                         ExploreButton { 
-                            text: "History"
-                            icon: "../../../../assets/images/icons/history-dark.svg" 
+                            text: "About"
+                            icon: "../../../../assets/images/icons/info-dark.svg" 
                         }
                         ExploreButton { 
                             text: "Settings"

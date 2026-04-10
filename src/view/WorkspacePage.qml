@@ -20,7 +20,7 @@ Rectangle {
     
     // > states 
     property bool isEditMode: false
-    // options: "dashboard", "records", "history", "settings"
+    // options: "dashboard", "records", "about", "settings"
     property string currentSection: "dashboard"
     
     // > sidebar state
@@ -127,10 +127,10 @@ Rectangle {
                             Layout.alignment: Qt.AlignLeft | Qt.AlignVCenter
                         }
 
-                        // Show History Title
+                        // Show About Title
                         Components.TitleText { 
-                            visible: workspacePage.currentSection === "history"
-                            text: "History"
+                            visible: workspacePage.currentSection === "about"
+                            text: "About"
                             textSize: 28 
                             Layout.alignment: Qt.AlignLeft | Qt.AlignVCenter
                         }
@@ -150,7 +150,6 @@ Rectangle {
                             Layout.alignment: Qt.AlignRight | Qt.AlignVCenter
                             roleText: app.activeRole === 0 ? "Admin" : "Viewer"
 
-                            onAboutRequested: {}
                             onLogoutRequested: {
                                 workspacePage.isEditMode = false
                                 appRecordsController.resetStates()
@@ -264,16 +263,16 @@ Rectangle {
 
                     Separator { Layout.alignment: Qt.AlignHCenter }
 
-                    // > history toggle
+                    // > about toggle
                     Components.ToggleButton {
                         Layout.alignment: Qt.AlignHCenter
-                        text: "History"
-                        iconSource: "../../../assets/images/icons/history-dark.svg"
-                        isActive: workspacePage.currentSection === "history"
+                        text: "About"
+                        iconSource: "../../../assets/images/icons/info-dark.svg"
+                        isActive: workspacePage.currentSection === "about"
                         onClicked: {
                             searchBar.clearSearchText()
                             appRecordsController.resetStates() 
-                            workspacePage.currentSection = "history"
+                            workspacePage.currentSection = "about"
                             workspacePage.isEditMode = false
                         }
                     }
@@ -332,7 +331,7 @@ Rectangle {
                     }              
                 }
 
-                // => history section
+                // => about section
                 ColumnLayout {
                     anchors.fill: parent
                     anchors.leftMargin: 20
@@ -340,10 +339,10 @@ Rectangle {
                     anchors.topMargin: 0
                     anchors.bottomMargin: 20
                     spacing: 10
-                    visible: workspacePage.currentSection === "history"
+                    visible: workspacePage.currentSection === "about"
 
                     Components.InfoText { 
-                        text: "History content goes here..."
+                        text: "About content goes here..."
                         textColor: "black"
                     }
 
