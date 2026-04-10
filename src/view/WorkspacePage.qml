@@ -341,9 +341,9 @@ Rectangle {
                     spacing: 10
                     visible: workspacePage.currentSection === "about"
 
-                    Components.InfoText { 
-                        text: "About content goes here..."
-                        textColor: "black"
+                    WorkspaceUI.AboutSection {
+                        Layout.fillWidth: true
+                        Layout.preferredHeight: 350
                     }
 
                     Item { Layout.fillHeight: true; Layout.fillWidth: true }                

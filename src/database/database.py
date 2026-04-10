@@ -29,7 +29,7 @@ class SQLDatabase:
                 use_pure = True
             )
             temp_cursor = temp_connection.cursor()
-            sql_path = Path(__file__).parent / 'db_init.sql'
+            sql_path = Path(__file__).parent / 'init_db.sql'
             with open(str(sql_path), 'r', encoding = 'utf-8') as f:
                 sql_script = f.read()
             sql_commands = sql_script.split(';')
@@ -39,7 +39,7 @@ class SQLDatabase:
                     temp_cursor.execute(clean_command)
             temp_connection.commit()
         except mysql.connector.Error as e:
-            print(f"Error running SQL initialization script: {e}")
+            print(f'Error running SQL initialization script: {e}')
             raise e 
         finally:
             if temp_cursor is not None:
