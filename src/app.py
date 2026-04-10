@@ -22,6 +22,9 @@ class App(QApplication):
         # Load Database First
         SQLDatabase.initialize()
 
+        # Seed database with sample data if empty
+        seedDatabase()
+
         # Force Hardware Multisampling
         fmt = QSurfaceFormat()
         fmt.setSamples(8)
@@ -78,9 +81,6 @@ class App(QApplication):
         # Return early if invalid (ex: QML errors)
         if not self.engine.rootObjects():
             self.exitApp(-1)
-
-        # Loading screen (at this point, the database has already been initialized)
-        seedDatabase()
 
     def run(self):
         ret = self.exec()

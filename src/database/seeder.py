@@ -12,7 +12,7 @@ COLLEGES = [
     ('CASS', 'College of Arts and Social Sciences'),
     ('CSM', 'College of Science and Mathematics'),
     ('CED', 'College of Education'),
-    ('CBAA', 'College of Business Administration and Accountancy'),
+    ('CEBA', 'College of Business Administration and Accountancy'),
     ('CHS', 'College of Health Sciences')
 ]
 
@@ -112,7 +112,7 @@ def seedDatabase():
         SQLDatabase.execute_many(program_query, PROGRAMS)
 
     if StudentRepository.is_empty():
-        students_data = generateStudentRecords(5000)
+        students_data = generateStudentRecords(20_000)
         student_query = """
             INSERT IGNORE INTO students 
             (id, first_name, last_name, program_code, year, gender) 
