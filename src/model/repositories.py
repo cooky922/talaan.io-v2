@@ -2,8 +2,7 @@ from pathlib import Path
 from typing import Union, Optional, Iterator, List
 import csv
 
-from src.database.database import SQLDatabase
-from src.database.queries import Sorted, Paged, Search
+from src.database import SQLDatabase, Sorted, Paged, Search
 from src.model.errors import DatabaseError, DatabaseErrorKind
 from src.model.entity_models import *
 

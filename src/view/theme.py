@@ -9,7 +9,6 @@ class classproperty(object):
         self.fget = fget
 
     def __get__(self, owner_self, owner_cls):
-        # The owner_cls is the class from which the attribute is accessed
         return self.fget(owner_cls)
 
 class FontLoader:

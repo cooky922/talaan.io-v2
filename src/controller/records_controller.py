@@ -1,15 +1,16 @@
 import math
 from PyQt6.QtCore import QObject, pyqtSlot, pyqtProperty, pyqtSignal
-from src.database.queries import Paged, Sorted, Search
-from src.model.entity_models import EntityKind
-from src.model.errors import ValidationError, DatabaseError
-from src.model.repositories import (
-    StudentRepository, 
-    ProgramRepository, 
+from src.database import Paged, Sorted, Search
+from src.model import (
+    EntityKind,
+    ValidationError,
+    DatabaseError,
+    StudentRepository,
+    ProgramRepository,
     CollegeRepository,
     REPOSITORY_MAP
 )
-    
+
 class QMLRecordsController(QObject):
     selectedEntityChanged = pyqtSignal()
     paginationChanged = pyqtSignal()

@@ -7,13 +7,11 @@ from PyQt6.QtGui import QSurfaceFormat, QIcon # type: ignore
 from PyQt6.QtQml import QQmlApplicationEngine # type: ignore
 from PyQt6.QtWidgets import QApplication
 
-from src.controller.records_controller import QMLRecordsController
-from src.controller.dashboard_controller import QMLDashboardController
-from src.controller.settings_controller import QMLSettingsController
-from src.database.database import SQLDatabase
-from src.model.table_model import RecordTableModel
-from src.view.theme import FontLoader, QMLAppTheme
+from src.controller import QMLRecordsController, QMLDashboardController, QMLSettingsController
+from src.database import SQLDatabase
+from src.model import RecordTableModel
 from src.utils import QMLUtils
+from src.view.theme import FontLoader, QMLAppTheme
 
 class App(QApplication):
     windows_app_id = 'ccc151.talaan_io.desktop_app.2_0'
